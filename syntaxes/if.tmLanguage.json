@@ -6,12 +6,6 @@
 			"include": "#comments"
 		},
 		{
-			"include": "#parameter"
-		},
-		{
-			"include": "#function"
-		},
-		{
 			"include": "#keywords"
 		},
 		{
@@ -32,16 +26,10 @@
 				}
 			  ]
 		},
-		"function":{
-			"patterns": [{
-				"name": "support.variable",
-				"match": "\\w+(?=\\()"
-			}]
-		},
 		"keywords": {
 			"patterns": [{
 				"name": "keyword.control.te",
-				"match": "\\b(type|attribute|dev_node|alias|allow)\\b"
+				"match": "\\b(if|while|for|return)\\b"
 			}]
 		},
 		"strings": {
