@@ -1,0 +1,48 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "TE Config File",
+	"patterns": [
+		{
+			"include": "#comments"
+		},
+		{
+			"include": "#keywords"
+		},
+		{
+			"include": "#strings"
+		}
+	],
+	"repository": {
+		"comments": {
+			"patterns": [
+				{
+				  "match": "(#).*",
+				  "name": "comment.line.number-sign.te",
+				  "captures": {
+					"1": {
+					  "name": "punctuation.definition.comment.te"
+					}
+				  }
+				}
+			  ]
+		},
+		"keywords": {
+			"patterns": [{
+				"name": "keyword.control.te",
+				"match": "\\b(if|while|for|return)\\b"
+			}]
+		},
+		"strings": {
+			"name": "string.quoted.double.te",
+			"begin": "\"",
+			"end": "\"",
+			"patterns": [
+				{
+					"name": "constant.character.escape.te",
+					"match": "\\\\."
+				}
+			]
+		}
+	},
+	"scopeName": "source.te"
+}
