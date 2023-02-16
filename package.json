@@ -20,12 +20,42 @@
         "title": "Hello World"
       }
     ],
-    "languages": [{
-      "id": "te",
-      "aliases": ["SELinux TE Config File", "te"],
-      "extensions": [".te"],
-      "configuration": "./language-configuration.json"
-    }],
+    "languages": [
+      {
+        "id": "te",
+        "aliases": [
+          "SELinux TE Config File",
+          "te"
+        ],
+        "extensions": [
+          ".te"
+        ],
+        "configuration": "./language-configuration.json"
+      },
+      {
+        "id": "fc",
+        "aliases": [
+          "SELinux FC Config File",
+          "fc"
+        ],
+        "extensions": [
+          ".fc"
+        ],
+        "configuration": "./language-configuration.json"
+      },
+      {
+        "id": "if",
+        "aliases": [
+          "SELinux IF Config File",
+          "if"
+        ],
+        "extensions": [
+          ".if"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+
+    ],
     "grammars": [
       {
         "language": "te",
