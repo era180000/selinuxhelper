@@ -61,6 +61,11 @@
         "language": "te",
         "scopeName": "source.te",
         "path": "./syntaxes/te.tmLanguage.json"
+      },
+      {
+        "language": "fc",
+        "scopeName": "source.fc",
+        "path": "./syntaxes/fc.tmLanguage.json"
       }
     ]
   },
