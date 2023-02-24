@@ -1,6 +1,6 @@
 {
 	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
-	"name": "TE Config File",
+	"name": "FC Config File",
 	"patterns": [
 		{
 			"include": "#comments"
@@ -9,7 +9,13 @@
 			"include": "#keywords"
 		},
 		{
+			"include": "#function"
+		},
+		{
 			"include": "#strings"
+		},
+		{
+			"include": "#constant"
 		}
 	],
 	"repository": {
@@ -17,10 +23,10 @@
 			"patterns": [
 				{
 				  "match": "(#).*",
-				  "name": "comment.line.number-sign.te",
+				  "name": "comment.line.number-sign.fc",
 				  "captures": {
 					"1": {
-					  "name": "punctuation.definition.comment.te"
+					  "name": "punctuation.definition.comment.fc"
 					}
 				  }
 				}
@@ -28,21 +34,53 @@
 		},
 		"keywords": {
 			"patterns": [{
-				"name": "keyword.control.te",
-				"match": "\\b(if|while|for|return)\\b"
+				"name": "keyword.other.fc",
+				"begin": "<<",
+				"end": ">>"
+			},
+			{
+				"name": "keyword.control.fc",
+				"match": "\\b(ifdef|define)\\b"
+			},
+			{
+				"//comment": "Match / or : in words",
+				"name": "keyword.other.fc",
+				"match": "(?<![\\(\\[\\{\\^])(/|:)"
+			}
+		]
+		},
+		"function":{
+			"patterns": [{
+				"name": "support.variable",
+				"match": "(?<=\\s)\\w+(?=\\()"
 			}]
 		},
 		"strings": {
-			"name": "string.quoted.double.te",
-			"begin": "\"",
-			"end": "\"",
+			"patterns": [{
+				"//comment": "Match -- or -letters ",
+			"name": "string.quoted.double.fc",
+			"begin": "(\")",
+			"end": "(\")",
 			"patterns": [
 				{
-					"name": "constant.character.escape.te",
-					"match": "\\\\."
+					"name" : "string.unquoted.fc",
+					"match": "(?<=(\\s|^))-\\S+"
+				}]
+			},
+			{
+				"name" : "string.regexp",
+				"match": ","
+			}]
+		},
+		"constant":{
+			"patterns" :[
+				{
+					"//comment": "Match -- or -letters ",
+					"name" : "constant.character.escape.fc",
+					"match": "(?<=(\\s|^))-\\S+"
 				}
 			]
 		}
 	},
-	"scopeName": "source.te"
+	"scopeName": "source.fc"
 }
