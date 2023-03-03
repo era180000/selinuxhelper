@@ -1,9 +1,15 @@
 {
 	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
-	"name": "TE Config File",
+	"name": "IF Config File",
 	"patterns": [
 		{
 			"include": "#comments"
+		},
+		{
+			"include": "#key-function"
+		},
+		{
+			"include": "#function"
 		},
 		{
 			"include": "#keywords"
@@ -17,32 +23,55 @@
 			"patterns": [
 				{
 				  "match": "(#).*",
-				  "name": "comment.line.number-sign.te",
+				  "name": "comment.line.number-sign.if",
 				  "captures": {
 					"1": {
-					  "name": "punctuation.definition.comment.te"
+					  "name": "punctuation.definition.comment.if"
 					}
 				  }
 				}
 			  ]
 		},
-		"keywords": {
+		"key-function":{
 			"patterns": [{
-				"name": "keyword.control.te",
-				"match": "\\b(if|while|for|return)\\b"
+				"name": "support.function",
+				"match": "\\b(interface(?=\\()|gen_require(?=\\())\\b"
 			}]
 		},
+		"function":{
+			"patterns": [{
+				"name": "support.variable.if",
+				"match": "\\w+(?=\\()"
+			}]
+		},
+		"keywords": {
+			"patterns": [{
+				"name": "keyword.control.if",
+				"match": "\\b(type|types|allow|role)\\b"
+			},
+			{
+				"//comment": "Match / or : in words",
+				"name": "keyword.other.fc",
+				"match": "(?<![\\(\\[\\{\\^])(/|:)"
+			},
+			{
+				"name": "support.class",
+				"match": "\\$\\d"
+			}
+		]
+		},
 		"strings": {
-			"name": "string.quoted.double.te",
+			"name": "string.quoted.double.if",
 			"begin": "\"",
 			"end": "\"",
 			"patterns": [
 				{
-					"name": "constant.character.escape.te",
+					"name": "constant.character.escape.if",
 					"match": "\\\\."
 				}
 			]
 		}
+		
 	},
-	"scopeName": "source.te"
+	"scopeName": "source.if"
 }
