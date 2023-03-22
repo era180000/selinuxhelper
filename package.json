@@ -2,7 +2,8 @@
   "name": "selinuxhelper",
   "displayName": "SELinuxHelper",
   "description": "Syntax Highlighting for SELinux Policy Files (.fc, .if, .spt, .te)",
-  "version": "0.0.1",
+  "icon": "images/selinux-penguin.png",
+  "version": "0.0.2",
   "engines": {
     "vscode": "^1.75.0"
   },
