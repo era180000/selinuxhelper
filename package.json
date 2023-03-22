@@ -16,10 +16,6 @@
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
-      {
-        "command": "selinuxhelper.helloWorld",
-        "title": "Hello World"
-      }
     ],
     "languages": [
       {
