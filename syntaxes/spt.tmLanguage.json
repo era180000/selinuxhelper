@@ -1,48 +1,73 @@
 {
-	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
-	"name": "SPT Config File",
-	"patterns": [
-		{
-			"include": "#comments"
-		},
-		{
-			"include": "#keywords"
-		},
-		{
-			"include": "#strings"
-		}
-	],
-	"repository": {
-		"comments": {
-			"patterns": [
-				{
-				  "match": "(#).*",
-				  "name": "comment.line.number-sign.spt",
-				  "captures": {
-					"1": {
-					  "name": "punctuation.definition.comment.spt"
-					}
-				  }
-				}
-			  ]
-		},
-		"keywords": {
-			"patterns": [{
-				"name": "keyword.control.spt",
-				"match": "\\b(if|while|for|return)\\b"
-			}]
-		},
-		"strings": {
-			"name": "string.quoted.double.spt",
-			"begin": "\"",
-			"end": "\"",
-			"patterns": [
-				{
-					"name": "constant.character.escape.spt",
-					"match": "\\\\."
-				}
-			]
-		}
-	},
-	"scopeName": "source.spt"
+    "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+    "name": "SPT Config File",
+    "patterns": [
+        {
+            "include": "#comments"
+        },
+        {
+            "include": "#keywords"
+        },
+        {
+            "include": "#function"
+        },
+        {
+            "include": "#strings"
+        }
+    ],
+    "repository": {
+        "comments": {
+            "patterns": [
+                {
+                    "match": "(#).*",
+                    "name": "comment.line.number-sign.spt",
+                    "captures": {
+                      "1": {
+                        "name": "punctuation.definition.comment.spt"
+                      }
+                    }
+                }
+            ]
+        },
+        "keywords": {
+            "patterns": [
+                {
+                    "match": "\\b(define|module|allow|class|optional|ifelse|sensitivity|user|dominance|bool|require|role)\\b",
+                    "name": "keyword.control.spt"
+                },
+                {
+                    "match": "(?<![\\(\\[\\{\\^])(/|:)",
+                    "name": "keyword.other.spt"
+                }
+            ]
+        },
+        "function": {
+            "patterns": [
+                {
+                    "match": "(?<=\\s)\\w+(?=\\()",
+                    "name": "support.variable"
+                }
+            ]
+        },
+        "strings": {
+            "patterns": [
+                {
+                    "name": "string.quoted.double.spt",
+                    "begin": "(\")",
+                    "end": "(\")",
+                    "patterns": [
+                        {
+                            "match": "\\\\.",
+                            "name": "constant.character.escape.spt"
+                        }
+                    ]
+                },
+                {
+                    "name": "string.regexp",
+                    "match": ","
+                }
+            ]
+        }
+    },
+    "scopeName": "source.spt"
 }
