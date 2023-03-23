@@ -1,71 +1,90 @@
-# selinuxhelper README
+# **SElinuxhelper README**
 
-his is the README for your extension "selinuxhelper". After writing up a brief description, we recommend including the following sections.
+![SELinux Penguin](images/selinux-penguin.png)
 
-## Features
+SElinuxhelper is a VS Code exentsion that allows syntax highlighting for various types of SELinux files. 
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+The following are the supported file types: **.te, .if, .fc, and .spt.**
 
-For example if there is an image subfolder under your extension project workspace:
+# **Features**
 
-\!\[feature X\]\(images/feature-x.png\)
+## <u> Comment Highlighting </u>
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+Comments in all files are colored **<span style="color:#6a9955">green</span>**.
 
-## Requirements
+Example:
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+![SELinux Comments](images/SELinux-Comments-Highlighting-Example.png)
 
-## Extension Settings
+## <u> .te Syntax Highlighting </u>
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+For .te files, the following are the colors for each file specific blocks of code:
 
-For example:
+* `gen_require`, `type`, and `alias` are colored **<span style="color:#569cd6">blue.</span>**
+* `dev_node` is colored **<span style="color:#b482da">purple.</span>**
+* Parenthesis for `gen_require` and `dev_node` are colored **<span style="color:#ffc000">yellow.</span>**
 
-This extension contributes the following settings:
+Example:
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+![SELinux te](images/SELinux-te-Highlighting-Example.png)
 
-## Known Issues
+## <u> .if Syntax Highlighting </u>
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+For .if files, the following are the colors for each file specific blocks of code:
 
-## Release Notes
+* `interface`, `gen_require`, `type`, and `allow` are colored **<span style="color:#569cd6">blue.</span>**
 
-Users appreciate release notes as you update your extension.
+Example:
 
-### 1.0.0
+![SELinux if](images/SELinux-if-Highlighting-Example.png)
 
-Initial release of ...
+## <u> .fc Syntax Highlighting </u>
 
-### 1.0.1
+For .fc files, the following are the colors for each file specific blocks of code:
 
-Fixed issue #.
+* `gen_context` is colored **<span style="color:#569cd6">blue.</span>**
+* Parenthesis for `gen_context` are colored **<span style="color:#ffc000">yellow.</span>**
 
-### 1.1.0
+Example:
 
-Added features X, Y, and Z.
+![SELinux fc](images/SELinux-fc-Highlighting-Example.png)
 
----
+## <u> .spt Syntax Highlighting </u>
 
-## Following extension guidelines
+For .spt files, the following are the colors for each file specific blocks of code:
 
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
+* `define` is colored **<span style="color:#569cd6">blue.</span>**
+* Parenthesis for `define` and backticks not surrounding brackets are colored **<span style="color:#ffc000">yellow.</span>**
+* Brackets and backticks surrounding those brackets are colored **<span style="color:#ff33cc">pink.</span>**
 
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
+Example:
 
-## Working with Markdown
+![SELinux spt](images/SELinux-spt-Highlighting-Example.png)
 
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
+# Requirements
 
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
+No additional requirements for this extension.
 
-## For more information
+# Extension Settings
 
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
 
-**Enjoy!**
+# Release Notes
+
+## <u> 0.0.2 </u>
+
+Initial prerelease of SeLinuxhelper.
+
+# Credits
+
+Developed by Sophia Boisvert, Easton Anderlik, Pranav Pradeep, Matt McCoy, Trevor Tomer, and Zeal Bhatt.
+
+SELinux Logo used under the Creative Commons ShareAlike 2.5 license. Credit to Máirín Duffy.
+
+Link to License: https://creativecommons.org/licenses/by-sa/2.5/
+
+Link to Artist: https://www.deviantart.com/pookstar/gallery
+
+Link to Selinux page: https://selinuxproject.org/ 
+
+
+
