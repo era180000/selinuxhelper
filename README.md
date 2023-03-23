@@ -67,6 +67,7 @@ No additional requirements for this extension.
 
 # Extension Settings
 
+No additional extension settings for this extension.
 
 # Release Notes
 
