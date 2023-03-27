@@ -2,6 +2,7 @@
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
+
 import {
 	createConnection,
 	TextDocuments,
@@ -14,12 +15,18 @@ import {
 	CompletionItemKind,
 	TextDocumentPositionParams,
 	TextDocumentSyncKind,
-	InitializeResult
+	InitializeResult,
+	
 } from 'vscode-languageserver/node';
 
+
 import {
-	TextDocument
+	TextDocument,
 } from 'vscode-languageserver-textdocument';
+
+import * as path from 'path';
+import * as fs from 'fs';
+import * as glob from 'glob';
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -35,6 +42,7 @@ let hasDiagnosticRelatedInformationCapability = false;
 connection.onInitialize((params: InitializeParams) => {
 	const capabilities = params.capabilities;
 
+	//params.capabilities.documentSelector = true;
 	// Does the client support the `workspace/configuration` request?
 	// If not, we fall back using global settings.
 	hasConfigurationCapability = !!(
@@ -48,14 +56,15 @@ connection.onInitialize((params: InitializeParams) => {
 		capabilities.textDocument.publishDiagnostics &&
 		capabilities.textDocument.publishDiagnostics.relatedInformation
 	);
-
+	
 	const result: InitializeResult = {
 		capabilities: {
 			textDocumentSync: TextDocumentSyncKind.Incremental,
 			// Tell the client that this server supports code completion.
 			completionProvider: {
-				resolveProvider: true
-			}
+				resolveProvider: true,
+			},
+			hoverProvider: true
 		}
 	};
 	if (hasWorkspaceFolderCapability) {
@@ -135,9 +144,10 @@ documents.onDidChangeContent(change => {
 });
 
 async function validateTextDocument(textDocument: TextDocument): Promise<void> {
+    
 	// In this simple example we get the settings for every validate run.
 	const settings = await getDocumentSettings(textDocument.uri);
-
+	
 	// The validator creates diagnostics for all uppercase words length 2 and more
 	const text = textDocument.getText();
 	const pattern = /\b[A-Z]{2,}\b/g;
@@ -179,6 +189,7 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 
 	// Send the computed diagnostics to VSCode.
 	connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
+    
 }
 
 connection.onDidChangeWatchedFiles(_change => {
@@ -192,18 +203,592 @@ connection.onCompletion(
 		// The pass parameter contains the position of the text document in
 		// which code complete got requested. For the example we ignore this
 		// info and always provide the same completion items.
-		return [
+        const uri = _textDocumentPosition.textDocument.uri;
+		
+        const fileExtension = path.extname(uri);
+		//connection.console.log(fileExtension);
+		
+        if (fileExtension === ".te" ){
+            return[ //.te completion items
+            {
+					label: 'alias',
+					kind: CompletionItemKind.Text			
+			},
 			{
-				label: 'TypeScript',
-				kind: CompletionItemKind.Text,
+					label: 'allow',
+					kind: CompletionItemKind.Text			
+			},
+			{
+					label: 'and',
+					kind: CompletionItemKind.Text			
+			},
+			{
+					label: 'attribute',
+					kind: CompletionItemKind.Text			
+			},
+			{
+					label: 'attribute_role',
+					kind: CompletionItemKind.Text			
+			},
+			{
+					label: 'auditallow',
+					kind: CompletionItemKind.Text			
+			},
+			{
+					label: 'auditdeny',
+					kind: CompletionItemKind.Text			
+			},
+			{
+					label: 'bool',
+					kind: CompletionItemKind.Text			
+			},
+			{
+					label: 'category',
+					kind: CompletionItemKind.Text			
+			},
+			{
+					label: 'cfalse',
+					kind: CompletionItemKind.Text			
+			},
+			{
+					label: 'class',
+					kind: CompletionItemKind.Text			
+			},
+			{
+					label: 'clone',
+					kind: CompletionItemKind.Text			
+			},
+			{
+					label: 'common',
+					kind: CompletionItemKind.Text			
+			},
+			{
+					label: 'constrain',
+					kind: CompletionItemKind.Text			
+			},
+			{
+					label: 'ctrue',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'dom',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'domby',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'dominance',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'dontaudit',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'else',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'equals',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'false',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'filename',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'filesystem',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'fscon',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'fs_use_task',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'fs_use_trans',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'fs_use_xattr',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'genfscon',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'h1',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'h2',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'identifier',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'if',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'incomp',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'inherits',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'iomemcon',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'ioportcon',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'ipv4_addr',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'ipv6_addr',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'l1',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'l2',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'level',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'mlsconstrain',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'mlsvalidatetrans',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'module',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'netifcon',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'neverallow',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'nodecon',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'not',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'notequal',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'number',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'object_r',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'optional',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'or',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'path',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'pcidevicecon',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'permissive',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'pirqcon',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'policycap',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'portcon',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'r1',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'r2',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'r3',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'range',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'range_transition',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'require',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'role',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'roleattribute',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'roles',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'role_transition',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'sameuser',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'sensitivity',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'sid',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'source',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 't1',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 't2',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 't3',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'target',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'true',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'type',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'typealias',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'typeattribute',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'typebounds',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'type_change',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'type_member',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'types',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'type_transition',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'u1',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'u2',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'u3',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'user',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'validatetrans',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'version_identifier',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'xor',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'default_user',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'default_role',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'default_type',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'default_range',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'low',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'high',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'low_high',
+					kind: CompletionItemKind.Text
+			},
+			{
+				label: 'tunable_policy',
+				kind: CompletionItemKind.Function,
+				insertText: 'tunable_policy(`$1\', `$2\')',
+				insertTextFormat: 2,
 				data: 1
 			},
 			{
-				label: 'JavaScript',
-				kind: CompletionItemKind.Text,
+				label: 'optional_policy',
+				kind: CompletionItemKind.Function,
+				insertText: 'optional_policy(`$0\')',
+				insertTextFormat: 2,
 				data: 2
-			}
-		];
+			},
+			{
+				label: 'ifdef',
+				kind: CompletionItemKind.Function,
+				insertText: 'ifdef(`$0\', `$1\')',
+				insertTextFormat: 2,
+				data: 3
+			},
+            ];
+        } else if (fileExtension === ".if"){
+            return[ //.if completion items
+			{
+					label: 'type',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'types',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'allow',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'role',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'attribute',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'bool',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'dontaudit',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'class',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'roleattribute',
+					kind: CompletionItemKind.Text
+			},
+			{
+					label: 'attribute_role',
+					kind: CompletionItemKind.Text
+			},
+			{
+				label: 'interface',
+				kind: CompletionItemKind.Function,
+				insertText: 'interface(`$0\')',
+				insertTextFormat: 2,
+				data: 4
+			},
+			{
+				label: 'gen_require',
+				kind: CompletionItemKind.Function,
+				insertText: 'gen_require(`$0\')',
+				insertTextFormat: 2,
+				data: 5
+			},
+			{
+				label: 'ifdef',
+				kind: CompletionItemKind.Function,
+				insertText: 'ifdef(`$1\', `$2\')',
+				insertTextFormat: 2,
+				data: 6
+			},
+			{
+				label: 'template',
+				kind: CompletionItemKind.Function,
+				insertText: 'template(`$1\', `$2\')',
+				insertTextFormat: 2,
+				data: 7
+			},
+			{
+				label: 'optional_policy',
+				kind: CompletionItemKind.Function,
+				insertText: 'optional_policy(`$1\')',
+				insertTextFormat: 2,
+				data: 8
+			},
+            ];
+		} else if (fileExtension === ".fc"){
+            return[//.fc completions
+				{
+					label: 'gen_context',
+					kind: CompletionItemKind.Function,
+					insertText: 'gen_context($1,$2)',
+					insertTextFormat: 2,
+					data: 9
+				},
+                {
+					label: 'system_u',
+					kind: CompletionItemKind.Text
+				},
+				{
+					label: 'object_r',
+					kind: CompletionItemKind.Text
+				},
+            ];
+        } else if (fileExtension === ".spt"){
+            return[//.spt completions
+			{
+				label: 'define',
+				kind: CompletionItemKind.Function,
+				insertText: 'define(`$1\',`$2\')',
+				insertTextFormat: 2,
+				data: 9
+		},
+		{
+				label: 'module',
+				kind: CompletionItemKind.Text
+		},
+		{
+				label: 'allow',
+				kind: CompletionItemKind.Text
+		},
+		{
+				label: 'class',
+				kind: CompletionItemKind.Text
+		},
+		{
+				label: 'optional',
+				kind: CompletionItemKind.Text
+		},
+		{
+				label: 'ifelse',
+				kind: CompletionItemKind.Text
+		},
+		{
+				label: 'sensitivity',
+				kind: CompletionItemKind.Text
+		},
+		{
+				label: 'user',
+				kind: CompletionItemKind.Text
+		},
+		{
+				label: 'dominance',
+				kind: CompletionItemKind.Text
+		},
+		{
+				label: 'bool',
+				kind: CompletionItemKind.Text
+		},
+		{
+				label: 'require',
+				kind: CompletionItemKind.Text
+		},
+		{
+				label: 'role',
+				kind: CompletionItemKind.Text
+		}
+        ];
+        }
+        //not my circus not my monkeys
+		return[];
 	}
 );
 
@@ -211,16 +796,14 @@ connection.onCompletion(
 // the completion list.
 connection.onCompletionResolve(
 	(item: CompletionItem): CompletionItem => {
-		if (item.data === 1) {
-			item.detail = 'TypeScript details';
-			item.documentation = 'TypeScript documentation';
-		} else if (item.data === 2) {
-			item.detail = 'JavaScript details';
-			item.documentation = 'JavaScript documentation';
+		switch (item.data){
+			case 1: item.detail = "alias"; break; //documentation for item data 1
 		}
 		return item;
 	}
 );
+
+
 
 // Make the text document manager listen on the connection
 // for open, change and close text document events

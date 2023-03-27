@@ -1,16 +1,18 @@
 {
 	"name": "selinuxhelper-client",
-    "displayName": "SELinuxHelper",
-    "description": "Syntax Highlighting and Programmatic Languge Features for SELinux Policy Files (.fc, .if, .spt, .te)",
-    "icon": "client/images/selinux-penguin.png",
-    "version": "0.0.2",
+	"displayName": "SELinuxHelper",
+	"description": "Syntax Highlighting and Programmatic Languge Features for SELinux Policy Files (.fc, .if, .spt, .te)",
+	"icon": "client/images/selinux-penguin.png",
+	"version": "0.0.2",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/Microsoft/vscode-extension-samples"
 	},
 	"publisher": "SELinuxHelper",
-	"categories": ["Visualization"],
+	"categories": [
+		"Visualization"
+	],
 	"keywords": [
 		"multi-root ready"
 	],
@@ -22,75 +24,74 @@
 	],
 	"main": "./client/out/extension",
 	"contributes": {
-        "languages": [
-            {
-              "id": "te",
-              "aliases": [
-                "Type Enforcement File",
-                "te"
-              ],
-              "extensions": [
-                ".te"
-              ],
-              "configuration": "./language-configuration.json"
-            },
-            {
-              "id": "fc",
-              "aliases": [
-                "File Contexts File",
-                "fc"
-              ],
-              "extensions": [
-                ".fc"
-              ],
-              "configuration": "./language-configuration.json"
-            },
-            {
-              "id": "if",
-              "aliases": [
-                "Interface File",
-                "if"
-              ],
-              "extensions": [
-                ".if"
-              ],
-              "configuration": "./language-configuration.json"
-            },
-            {
-              "id": "spt",
-              "aliases": [
-                "Support Macros File",
-                "spt"
-              ],
-              "extensions": [
-                ".spt"
-              ],
-              "configuration": "./language-configuration.json"
-            }
-      
-          ],
-          "grammars": [
-            {
-              "language": "te",
-              "scopeName": "source.te",
-              "path": "./syntaxes/te.tmLanguage.json"
-            },
-            {
-              "language": "fc",
-              "scopeName": "source.fc",
-              "path": "./syntaxes/fc.tmLanguage.json"
-            },
-            {
-              "language": "if",
-              "scopeName": "source.if",
-              "path": "./syntaxes/if.tmLanguage.json"
-            },
-            {
-              "language": "spt",
-              "scopeName": "source.spt",
-              "path": "./syntaxes/spt.tmLanguage.json"
-            }
-          ],
+		"languages": [
+			{
+				"id": "te",
+				"aliases": [
+					"Type Enforcement File",
+					"te"
+				],
+				"extensions": [
+					".te"
+				],
+				"configuration": "./language-configuration.json"
+			},
+			{
+				"id": "fc",
+				"aliases": [
+					"File Contexts File",
+					"fc"
+				],
+				"extensions": [
+					".fc"
+				],
+				"configuration": "./language-configuration.json"
+			},
+			{
+				"id": "if",
+				"aliases": [
+					"Interface File",
+					"if"
+				],
+				"extensions": [
+					".if"
+				],
+				"configuration": "./language-configuration.json"
+			},
+			{
+				"id": "spt",
+				"aliases": [
+					"Support Macros File",
+					"spt"
+				],
+				"extensions": [
+					".spt"
+				],
+				"configuration": "./language-configuration.json"
+			}
+		],
+		"grammars": [
+			{
+				"language": "te",
+				"scopeName": "source.te",
+				"path": "./syntaxes/te.tmLanguage.json"
+			},
+			{
+				"language": "fc",
+				"scopeName": "source.fc",
+				"path": "./syntaxes/fc.tmLanguage.json"
+			},
+			{
+				"language": "if",
+				"scopeName": "source.if",
+				"path": "./syntaxes/if.tmLanguage.json"
+			},
+			{
+				"language": "spt",
+				"scopeName": "source.spt",
+				"path": "./syntaxes/spt.tmLanguage.json"
+			}
+		],
 		"configuration": {
 			"type": "object",
 			"title": "Example configuration",
@@ -126,10 +127,15 @@
 	"devDependencies": {
 		"@types/mocha": "^9.1.0",
 		"@types/node": "^16.11.7",
+		"@types/vscode": "^1.76.0",
 		"@typescript-eslint/eslint-plugin": "^5.54.0",
 		"@typescript-eslint/parser": "^5.54.0",
 		"eslint": "^8.35.0",
 		"mocha": "^9.2.1",
 		"typescript": "^5.0.2"
+	},
+	"dependencies": {
+		"fs": "^0.0.1-security",
+		"glob": "^9.3.2"
 	}
 }
