@@ -25,8 +25,8 @@ import {
 } from 'vscode-languageserver-textdocument';
 
 import * as path from 'path';
-import * as fs from 'fs';
-import * as glob from 'glob';
+//import * as fs from 'fs';
+//import * as glob from 'glob';
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
