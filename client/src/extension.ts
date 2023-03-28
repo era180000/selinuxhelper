@@ -35,11 +35,11 @@ export function activate(context: ExtensionContext) {
 	const clientOptions: LanguageClientOptions = {
 		// Register the server for plain text documents
 		documentSelector: [
-			{ scheme: 'file', language: 'plaintext' },
+			//{ scheme: 'file', language: 'plaintext' },
 			{ scheme: 'file', language: 'te'},
 			{ scheme: 'file', language: 'if'},
 			{ scheme: 'file', language: 'spt'},
-			{ scheme: 'file', language: 'fc'},
+			{ scheme: 'file', language: 'fc'}
 	],
 		synchronize: {
 			// Notify the server about file changes to '.clientrc files contained in the workspace

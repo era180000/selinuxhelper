@@ -143,6 +143,8 @@ documents.onDidChangeContent(change => {
 	validateTextDocument(change.document);
 });
 
+//DEFAULT VALIDATION FROM TUTORIAL
+//TODO: REMOVE/REPLACE
 async function validateTextDocument(textDocument: TextDocument): Promise<void> {
     
 	// In this simple example we get the settings for every validate run.
