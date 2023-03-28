@@ -58,7 +58,7 @@
         "variables": {
             "patterns": [
                 {
-                    "match": "(?<=\\s)\\w+(?=\\;)",
+                    "match": "(?<=\\{|\\s)[\\w]+(?=\\;|\\s)",
                     "name": "support.class.spt"
                 }
             ]

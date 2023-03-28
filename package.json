@@ -3,11 +3,11 @@
 	"displayName": "SELinuxHelper",
 	"description": "Syntax Highlighting and Programmatic Languge Features for SELinux Policy Files (.fc, .if, .spt, .te)",
 	"icon": "client/images/selinux-penguin.png",
-	"version": "0.0.2",
+	"version": "0.0.3",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/Microsoft/vscode-extension-samples"
+		"url": "https://github.com/era180000/selinuxhelper"
 	},
 	"publisher": "SELinuxHelper",
 	"categories": [
@@ -19,9 +19,7 @@
 	"engines": {
 		"vscode": "^1.75.0"
 	},
-	"activationEvents": [
-		"onLanguage:plaintext"
-	],
+	"activationEvents": [],
 	"main": "./client/out/extension",
 	"contributes": {
 		"languages": [
@@ -96,13 +94,13 @@
 			"type": "object",
 			"title": "Example configuration",
 			"properties": {
-				"languageServerExample.maxNumberOfProblems": {
+				"languageServer.maxNumberOfProblems": {
 					"scope": "resource",
 					"type": "number",
 					"default": 100,
 					"description": "Controls the maximum number of problems produced by the server."
 				},
-				"languageServerExample.trace.server": {
+				"languageServer.trace.server": {
 					"scope": "window",
 					"type": "string",
 					"enum": [

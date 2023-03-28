@@ -63,8 +63,8 @@ connection.onInitialize((params: InitializeParams) => {
 			// Tell the client that this server supports code completion.
 			completionProvider: {
 				resolveProvider: true,
-			},
-			hoverProvider: true
+			}
+			//hoverProvider: true
 		}
 	};
 	if (hasWorkspaceFolderCapability) {
@@ -114,9 +114,13 @@ connection.onDidChangeConfiguration(change => {
 	}
 
 	// Revalidate all open text documents
-	documents.all().forEach(validateTextDocument);
+	//documents.all().forEach(validateTextDocument);
 });
 
+
+//DEFAULT FUNCTION FROM EXAMPLE
+//TODO REMOVE/REPLACE
+/*
 function getDocumentSettings(resource: string): Thenable<ExampleSettings> {
 	if (!hasConfigurationCapability) {
 		return Promise.resolve(globalSettings);
@@ -131,6 +135,7 @@ function getDocumentSettings(resource: string): Thenable<ExampleSettings> {
 	}
 	return result;
 }
+*/
 
 // Only keep settings for open documents
 documents.onDidClose(e => {
@@ -140,11 +145,12 @@ documents.onDidClose(e => {
 // The content of a text document has changed. This event is emitted
 // when the text document first opened or when its content has changed.
 documents.onDidChangeContent(change => {
-	validateTextDocument(change.document);
+	//validateTextDocument(change.document);
 });
 
 //DEFAULT VALIDATION FROM TUTORIAL
 //TODO: REMOVE/REPLACE
+/*
 async function validateTextDocument(textDocument: TextDocument): Promise<void> {
     
 	// In this simple example we get the settings for every validate run.
@@ -193,6 +199,7 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 	connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
     
 }
+*/
 
 connection.onDidChangeWatchedFiles(_change => {
 	// Monitored files have change in VSCode
