@@ -86,7 +86,19 @@
         "scopeName": "source.spt",
         "path": "./syntaxes/spt.tmLanguage.json"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "SELinuxHelper",
+      "properties": {      
+        "seLinuxHelper.development.pathInclusion": {
+        "type": "array",
+        "scope": "window",
+        "editPresentation": "multilineText",
+        "default": ["/usr/share/selinux/devel/include/"],
+        "description": "Specify paths to include in Intellisense definition parsing. Defaults to /usr/share/selinux/devel/include/"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
