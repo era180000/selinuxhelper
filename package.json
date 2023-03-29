@@ -1,4 +1,5 @@
 {
+language-server
 	"name": "selinuxhelper-client",
 	"displayName": "SELinuxHelper",
 	"description": "Syntax Highlighting and Programmatic Languge Features for SELinux Policy Files (.fc, .if, .spt, .te)",
@@ -92,7 +93,7 @@
 		],
 		"configuration": {
 			"type": "object",
-			"title": "Example configuration",
+			"title": "Configuration",
 			"properties": {
 				"languageServer.maxNumberOfProblems": {
 					"scope": "resource",
@@ -110,7 +111,14 @@
 					],
 					"default": "off",
 					"description": "Traces the communication between VS Code and the language server."
-				}
+				},
+        "seLinuxHelper.development.pathInclusion": {
+        "type": "array",
+        "scope": "window",
+        "editPresentation": "multilineText",
+        "default": ["/usr/share/selinux/devel/include/"],
+        "description": "Specify paths to include in Intellisense definition parsing. Defaults to /usr/share/selinux/devel/include/"
+        }
 			}
 		}
 	},
