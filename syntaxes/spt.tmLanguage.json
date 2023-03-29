@@ -13,6 +13,12 @@
         },
         {
             "include": "#strings"
+        },
+        {
+            "include": "#variables"
+        },
+        {
+            "include": "#macros"
         }
     ],
     "repository": {
@@ -32,7 +38,7 @@
         "keywords": {
             "patterns": [
                 {
-                    "match": "\\b(define|module|allow|class|optional|ifelse|sensitivity|user|dominance|bool|require|role)\\b",
+                    "match": "\\b(define|module|allow|class|optional|ifelse|sensitivity|user|dominance|bool|require|role|type_transition)\\b",
                     "name": "keyword.control.spt"
                 },
                 {
@@ -45,7 +51,23 @@
             "patterns": [
                 {
                     "match": "(?<=\\s)\\w+(?=\\()",
-                    "name": "support.variable"
+                    "name": "support.variable.spt"
+                }
+            ]
+        },
+        "variables": {
+            "patterns": [
+                {
+                    "match": "(?<=\\{|\\s)[\\w]+(?=\\;|\\s)",
+                    "name": "support.class.spt"
+                }
+            ]
+        },
+        "macros": {
+            "patterns": [
+                {
+                    "match": "(?<=`)\\w+",
+                    "name": "variable"
                 }
             ]
         },
@@ -68,6 +90,7 @@
                 }
             ]
         }
+        
     },
     "scopeName": "source.spt"
 }

@@ -1,95 +1,117 @@
 {
-  "name": "selinuxhelper",
-  "displayName": "SELinuxHelper",
-  "description": "Syntax Highlighting for SELinux Policy Files (.fc, .if, .spt, .te)",
-  "icon": "images/selinux-penguin.png",
-  "version": "0.0.2",
-  "engines": {
-    "vscode": "^1.75.0"
-  },
-  "publisher": "SELinuxHelper",
-  "categories": [
-    "Visualization"
-  ],
-  "activationEvents": [
-    
-  ],
-  "main": "./out/extension.js",
-  "contributes": {
-    "commands": [
-    ],
-    "languages": [
-      {
-        "id": "te",
-        "aliases": [
-          "SELinux TE Config File",
-          "te"
-        ],
-        "extensions": [
-          ".te"
-        ],
-        "configuration": "./language-configuration.json"
-      },
-      {
-        "id": "fc",
-        "aliases": [
-          "SELinux FC Config File",
-          "fc"
-        ],
-        "extensions": [
-          ".fc"
-        ],
-        "configuration": "./language-configuration.json"
-      },
-      {
-        "id": "if",
-        "aliases": [
-          "SELinux IF Config File",
-          "if"
-        ],
-        "extensions": [
-          ".if"
-        ],
-        "configuration": "./language-configuration.json"
-      },
-      {
-        "id": "spt",
-        "aliases": [
-          "SELinux SPT Config File",
-          "spt"
-        ],
-        "extensions": [
-          ".spt"
-        ],
-        "configuration": "./language-configuration.json"
-      }
-
-    ],
-    "grammars": [
-      {
-        "language": "te",
-        "scopeName": "source.te",
-        "path": "./syntaxes/te.tmLanguage.json"
-      },
-      {
-        "language": "fc",
-        "scopeName": "source.fc",
-        "path": "./syntaxes/fc.tmLanguage.json"
-      },
-      {
-        "language": "if",
-        "scopeName": "source.if",
-        "path": "./syntaxes/if.tmLanguage.json"
-      },
-      {
-        "language": "spt",
-        "scopeName": "source.spt",
-        "path": "./syntaxes/spt.tmLanguage.json"
-      }
-    ],
-    "configuration": {
-      "title": "SELinuxHelper",
-      "properties": {      
+language-server
+	"name": "selinuxhelper-client",
+	"displayName": "SELinuxHelper",
+	"description": "Syntax Highlighting and Programmatic Languge Features for SELinux Policy Files (.fc, .if, .spt, .te)",
+	"icon": "client/images/selinux-penguin.png",
+	"version": "0.0.3",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/era180000/selinuxhelper"
+	},
+	"publisher": "SELinuxHelper",
+	"categories": [
+		"Visualization"
+	],
+	"keywords": [
+		"multi-root ready"
+	],
+	"engines": {
+		"vscode": "^1.75.0"
+	},
+	"activationEvents": [],
+	"main": "./client/out/extension",
+	"contributes": {
+		"languages": [
+			{
+				"id": "te",
+				"aliases": [
+					"Type Enforcement File",
+					"te"
+				],
+				"extensions": [
+					".te"
+				],
+				"configuration": "./language-configuration.json"
+			},
+			{
+				"id": "fc",
+				"aliases": [
+					"File Contexts File",
+					"fc"
+				],
+				"extensions": [
+					".fc"
+				],
+				"configuration": "./language-configuration.json"
+			},
+			{
+				"id": "if",
+				"aliases": [
+					"Interface File",
+					"if"
+				],
+				"extensions": [
+					".if"
+				],
+				"configuration": "./language-configuration.json"
+			},
+			{
+				"id": "spt",
+				"aliases": [
+					"Support Macros File",
+					"spt"
+				],
+				"extensions": [
+					".spt"
+				],
+				"configuration": "./language-configuration.json"
+			}
+		],
+		"grammars": [
+			{
+				"language": "te",
+				"scopeName": "source.te",
+				"path": "./syntaxes/te.tmLanguage.json"
+			},
+			{
+				"language": "fc",
+				"scopeName": "source.fc",
+				"path": "./syntaxes/fc.tmLanguage.json"
+			},
+			{
+				"language": "if",
+				"scopeName": "source.if",
+				"path": "./syntaxes/if.tmLanguage.json"
+			},
+			{
+				"language": "spt",
+				"scopeName": "source.spt",
+				"path": "./syntaxes/spt.tmLanguage.json"
+			}
+		],
+		"configuration": {
+			"type": "object",
+			"title": "Configuration",
+			"properties": {
+				"languageServer.maxNumberOfProblems": {
+					"scope": "resource",
+					"type": "number",
+					"default": 100,
+					"description": "Controls the maximum number of problems produced by the server."
+				},
+				"languageServer.trace.server": {
+					"scope": "window",
+					"type": "string",
+					"enum": [
+						"off",
+						"messages",
+						"verbose"
+					],
+					"default": "off",
+					"description": "Traces the communication between VS Code and the language server."
+				},
         "seLinuxHelper.development.pathInclusion": {
         "type": "array",
         "scope": "window",
@@ -97,33 +119,29 @@
         "default": ["/usr/share/selinux/devel/include/"],
         "description": "Specify paths to include in Intellisense definition parsing. Defaults to /usr/share/selinux/devel/include/"
         }
-      }
-    }
-  },
-  "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "pretest": "npm run compile && npm run lint",
-    "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js"
-  },
-  "devDependencies": {
-    "@types/glob": "^8.0.1",
-    "@types/mocha": "^10.0.1",
-    "@types/node": "^16.18.12",
-    "@types/vscode": "^1.75.0",
-    "@typescript-eslint/eslint-plugin": "^5.49.0",
-    "@typescript-eslint/parser": "^5.49.0",
-    "@vscode/test-electron": "^2.2.3",
-    "eslint": "^8.33.0",
-    "glob": "^8.1.0",
-    "mocha": "^10.1.0",
-    "typescript": "^4.9.4"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/era180000/selinuxhelper"
-  }
-  
+			}
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -b",
+		"watch": "tsc -b -w",
+		"lint": "eslint ./client/src ./server/src --ext .ts,.tsx",
+		"postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
+		"test": "sh ./scripts/e2e.sh"
+	},
+	"devDependencies": {
+		"@types/mocha": "^9.1.0",
+		"@types/node": "^16.11.7",
+		"@types/vscode": "^1.76.0",
+		"@typescript-eslint/eslint-plugin": "^5.54.0",
+		"@typescript-eslint/parser": "^5.54.0",
+		"eslint": "^8.35.0",
+		"mocha": "^9.2.1",
+		"typescript": "^5.0.2"
+	},
+	"dependencies": {
+		"fs": "^0.0.1-security",
+		"glob": "^9.3.2"
+	}
 }

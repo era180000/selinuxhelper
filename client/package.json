@@ -1,0 +1,50 @@
+{
+  "name": "selinuxhelper-client",
+  "displayName": "SELinuxHelper",
+  "description": "Syntax Highlighting for SELinux Policy Files (.fc, .if, .spt, .te)",
+  "icon": "images/selinux-penguin.png",
+  "version": "0.0.2",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "publisher": "SELinuxHelper",
+  "categories": [
+    "Visualization"
+  ],
+  "activationEvents": [
+    
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": []
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "dependencies": {
+		"vscode-languageclient": "^8.1.0"
+	},
+  "devDependencies": {
+    "@types/glob": "^8.0.1",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^16.18.12",
+    "@types/vscode": "^1.75.1",
+    "@typescript-eslint/eslint-plugin": "^5.49.0",
+    "@typescript-eslint/parser": "^5.49.0",
+    "@vscode/test-electron": "^2.2.3",
+    "eslint": "^8.33.0",
+    "glob": "^8.1.0",
+    "mocha": "^10.1.0",
+    "typescript": "^4.9.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/era180000/selinuxhelper"
+  }
+  
+}

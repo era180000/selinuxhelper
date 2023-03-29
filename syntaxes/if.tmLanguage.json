@@ -35,7 +35,7 @@
 		"key-function":{
 			"patterns": [{
 				"name": "support.function",
-				"match": "\\b(interface(?=\\()|gen_require(?=\\())\\b"
+				"match": "\\b(interface(?=\\()|gen_require(?=\\()|ifdef(?=\\()|template(?=\\()|optional_policy(?=\\())\\b"
 			}]
 		},
 		"function":{
@@ -47,7 +47,7 @@
 		"keywords": {
 			"patterns": [{
 				"name": "keyword.control.if",
-				"match": "\\b(type|types|allow|role)\\b"
+				"match": "\\b(type|types|allow|role|attribute|bool|dontaudit|class|roleattribute|attribute_role)\\b"
 			},
 			{
 				"//comment": "Match / or : in words",
@@ -55,8 +55,9 @@
 				"match": "(?<![\\(\\[\\{\\^])(/|:)"
 			},
 			{
+				"//comment": "Matches $ and a digit when they are alone (can be adjacent to whitespace, commas, and parentheses)",
 				"name": "support.class",
-				"match": "\\$\\d"
+				"match": "(?<=\\s|\\()\\$\\d(?=\\s|\\)|\\,)"
 			}
 		]
 		},
