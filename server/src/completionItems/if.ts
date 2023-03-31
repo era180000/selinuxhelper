@@ -3,43 +3,47 @@ import { CompletionItem, CompletionItemKind } from 'vscode-languageserver/node';
 export const ifCompletionItems: CompletionItem[] = [
     {
         label: 'type',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'types',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'allow',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'role',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'attribute',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'bool',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'dontaudit',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'class',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'roleattribute',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'attribute_role',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
+    },
+    {
+        label: 'typeattribute',
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'interface',

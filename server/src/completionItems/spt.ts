@@ -10,46 +10,46 @@ export const sptCompletionItems: CompletionItem[] = [
     },
     {
         label: 'module',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'allow',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'class',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'optional',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'ifelse',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'sensitivity',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'user',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'dominance',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'bool',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'require',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'role',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     }
 ]

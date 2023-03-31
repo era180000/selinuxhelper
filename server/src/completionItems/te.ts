@@ -3,407 +3,407 @@ import { CompletionItem, CompletionItemKind } from 'vscode-languageserver/node';
 export const teCompletionItems: CompletionItem[] = [
     {
         label: 'alias',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'allow',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'and',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'attribute',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'attribute_role',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'auditallow',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'auditdeny',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'bool',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'category',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'cfalse',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'class',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'clone',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'common',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'constrain',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'ctrue',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'dom',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'domby',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'dominance',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'dontaudit',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'else',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'equals',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'false',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'filename',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'filesystem',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'fscon',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'fs_use_task',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'fs_use_trans',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'fs_use_xattr',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'genfscon',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'h1',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'h2',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'identifier',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'if',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'incomp',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'inherits',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'iomemcon',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'ioportcon',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'ipv4_addr',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'ipv6_addr',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'l1',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'l2',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'level',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'mlsconstrain',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'mlsvalidatetrans',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'module',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'netifcon',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'neverallow',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'nodecon',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'not',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'notequal',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'number',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'object_r',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'optional',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'or',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'path',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'pcidevicecon',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'permissive',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'pirqcon',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'policycap',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'portcon',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'r1',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'r2',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'r3',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'range',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'range_transition',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'require',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'role',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'roleattribute',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'roles',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'role_transition',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'sameuser',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'sensitivity',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'sid',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'source',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 't1',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 't2',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 't3',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'target',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'true',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'type',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'typealias',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'typeattribute',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'typebounds',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'type_change',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'type_member',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'types',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'type_transition',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'u1',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'u2',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'u3',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'user',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'validatetrans',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'version_identifier',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'xor',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'default_user',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'default_role',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'default_type',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'default_range',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'low',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'high',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'low_high',
-        kind: CompletionItemKind.Text
+        kind: CompletionItemKind.Keyword
     },
     {
         label: 'tunable_policy',

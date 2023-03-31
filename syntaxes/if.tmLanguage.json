@@ -47,7 +47,7 @@
 		"keywords": {
 			"patterns": [{
 				"name": "keyword.control.if",
-				"match": "\\b(type|types|allow|role|attribute|bool|dontaudit|class|roleattribute|attribute_role)\\b"
+				"match": "\\b(type|types|allow|role|attribute|bool|dontaudit|class|roleattribute|attribute_role|typeattribute)\\b"
 			},
 			{
 				"//comment": "Match / or : in words",
