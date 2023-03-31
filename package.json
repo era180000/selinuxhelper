@@ -3,7 +3,7 @@
 	"displayName": "SELinuxHelper",
 	"description": "Syntax Highlighting and Programmatic Languge Features for SELinux Policy Files (.fc, .if, .spt, .te)",
 	"icon": "client/images/selinux-penguin.png",
-	"version": "0.0.3",
+	"version": "0.1.0",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
@@ -115,7 +115,9 @@
 					"type": "array",
 					"scope": "window",
 					"editPresentation": "multilineText",
-					"default": ["/usr/share/selinux/devel/include/"],
+					"default": [
+						"/usr/share/selinux/devel/include/"
+					],
 					"description": "Specify paths to include in Intellisense definition parsing. Defaults to /usr/share/selinux/devel/include/"
 				}
 			}
