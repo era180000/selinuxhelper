@@ -1,5 +1,5 @@
 {
-	"name": "selinuxhelper-client",
+	"name": "selinuxhelper",
 	"displayName": "SELinuxHelper",
 	"description": "Syntax Highlighting and Programmatic Languge Features for SELinux Policy Files (.fc, .if, .spt, .te)",
 	"icon": "client/images/selinux-penguin.png",
