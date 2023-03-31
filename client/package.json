@@ -16,7 +16,9 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
-    "commands": []
+    "capabilities":  {
+      "hoverProvider": "true"
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

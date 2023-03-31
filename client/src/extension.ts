@@ -5,7 +5,6 @@
 
 import * as path from 'path';
 import { workspace, ExtensionContext } from 'vscode';
-
 import {
 	LanguageClient,
 	LanguageClientOptions,
@@ -33,9 +32,7 @@ export function activate(context: ExtensionContext) {
 
 	// Options to control the language client
 	const clientOptions: LanguageClientOptions = {
-		// Register the server for plain text documents
 		documentSelector: [
-			//{ scheme: 'file', language: 'plaintext' },
 			{ scheme: 'file', language: 'te'},
 			{ scheme: 'file', language: 'if'},
 			{ scheme: 'file', language: 'spt'},
