@@ -425,5 +425,12 @@ export const teCompletionItems: CompletionItem[] = [
         insertText: 'ifdef(`$0\', `$1\')',
         insertTextFormat: 2,
         data: 3
+    },
+    {
+        label: 'ifndef',
+        kind: CompletionItemKind.Function,
+        insertText: 'ifndef(`$0\', `$1\')',
+        insertTextFormat: 2,
+        data: 3
     }
 ]

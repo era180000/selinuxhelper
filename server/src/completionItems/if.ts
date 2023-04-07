@@ -67,17 +67,24 @@ export const ifCompletionItems: CompletionItem[] = [
         data: 6
     },
     {
+        label: 'ifndef',
+        kind: CompletionItemKind.Function,
+        insertText: 'ifndef(`$1\', `$2\')',
+        insertTextFormat: 2,
+        data: 7
+    },
+    {
         label: 'template',
         kind: CompletionItemKind.Function,
         insertText: 'template(`$1\', `$2\')',
         insertTextFormat: 2,
-        data: 7
+        data: 8
     },
     {
         label: 'optional_policy',
         kind: CompletionItemKind.Function,
         insertText: 'optional_policy(`$1\')',
         insertTextFormat: 2,
-        data: 8
+        data: 9
     }
 ]

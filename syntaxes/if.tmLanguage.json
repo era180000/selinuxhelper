@@ -35,7 +35,7 @@
 		"key-function":{
 			"patterns": [{
 				"name": "support.function",
-				"match": "\\b(interface(?=\\()|gen_require(?=\\()|ifdef(?=\\()|template(?=\\()|optional_policy(?=\\())\\b"
+				"match": "\\b(interface(?=\\()|gen_require(?=\\()|ifdef(?=\\()|ifndef(?=\\()|template(?=\\()|optional_policy(?=\\())\\b"
 			}]
 		},
 		"function":{

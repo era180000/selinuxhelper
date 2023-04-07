@@ -6,7 +6,7 @@
 			"include": "#comments"
 		},
 		{
-			"include": "#parameter"
+			"include": "#key-function"
 		},
 		{
 			"include": "#function"
@@ -32,9 +32,15 @@
 				}
 			  ]
 		},
+		"key-function":{
+			"patterns": [{
+				"name": "support.function.te",
+				"match": "optional_policy|ifdef|ifndef|tunable_policy"
+			}]
+		},
 		"function":{
 			"patterns": [{
-				"name": "support.variable",
+				"name": "support.variable.te",
 				"match": "\\w+(?=\\()"
 			}]
 		},
@@ -68,7 +74,8 @@
 			}
 		]
 			
-		}
+	}
+		
 	},
 	"scopeName": "source.te"
 }
