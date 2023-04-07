@@ -46,7 +46,7 @@ For .fc files, the following are the colors for each file specific blocks of cod
 * Parenthesis for `gen_context` are colored **<span style="color:#ffc000">yellow.</span>**
 
 Example:
-
+ 
 ![SELinux fc](images/SELinux-fc-Highlighting-Example.png)
 
 ## <u> .spt Syntax Highlighting </u>
@@ -86,6 +86,4 @@ Link to License: https://creativecommons.org/licenses/by-sa/2.5/
 Link to Artist: https://www.deviantart.com/pookstar/gallery
 
 Link to Selinux page: https://selinuxproject.org/ 
-
-
 
