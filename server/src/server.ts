@@ -34,6 +34,9 @@ import * as path from 'path';
 // Also include all preview / proposed LSP features.
 const connection = createConnection(ProposedFeatures.all);
 
+//global settings
+let someSetting: string;
+
 // Create a simple text document manager.
 const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 
@@ -41,7 +44,7 @@ let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
 let hasDiagnosticRelatedInformationCapability = false;
 
-connection.onInitialize((params: InitializeParams) => {
+connection.onInitialize( async (params: InitializeParams) => {
 	const capabilities = params.capabilities;
 
 	// Does the client support the `workspace/configuration` request?
@@ -57,6 +60,9 @@ connection.onInitialize((params: InitializeParams) => {
 		capabilities.textDocument.publishDiagnostics &&
 		capabilities.textDocument.publishDiagnostics.relatedInformation
 	);
+
+	someSetting = params.initializationOptions.someSetting;
+	connection.console.log(someSetting);
 
 	const result: InitializeResult = {
 		capabilities: {
@@ -100,6 +106,21 @@ documents.onDidChangeContent(change => {
 // The example settings
 interface ExampleSettings {
 	maxNumberOfProblems: number;
+}
+
+function getDocumentSettings(resource: string): Thenable<ExampleSettings> {
+	if (!hasConfigurationCapability) {
+		return Promise.resolve(globalSettings);
+	}
+	let result = documentSettings.get(resource);
+	if (!result) {
+		result = connection.workspace.getConfiguration({
+			scopeUri: resource,
+			section: 'seLinuxHelper'
+		});
+		documentSettings.set(resource, result);
+	}
+	return result;
 }
 
 // The global settings, used when the `workspace/configuration` request is not supported by the client.
