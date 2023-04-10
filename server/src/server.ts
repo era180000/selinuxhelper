@@ -29,7 +29,9 @@ import {
 	TextDocument,
 } from 'vscode-languageserver-textdocument';
 
+import { URI } from 'vscode-languageserver/node';
 import * as path from 'path';
+import { serialize } from 'v8';
 //import * as fs from 'fs';
 //import * as glob from 'glob';
 
@@ -129,7 +131,7 @@ documents.onDidClose(e => {
 // The content of a text document has changed. This event is emitted
 // when the text document first opened or when its content has changed.
 documents.onDidChangeContent(change => {
-	//validateTextDocument(change.document);
+	//TO-DO: Update Parser
 });
 
 
@@ -139,19 +141,29 @@ connection.onDidChangeWatchedFiles(_change => {
 });
 
 
-//This function identifies the hovered word and seperates it from any surrounding text
+/*	This function identifies the hovered word and seperates it from any surrounding text
+*	INPUTS: document: TextDocument of hovered word
+			position: Position of hovered word in Text Document
+*	OUTPUTS: String representing the hovered word seperated from any adjoining punctuation 
+*				or separator markings 
+*/
 function getWord(document: TextDocument, position: Position)
 {
 	const start = {
 		line: position.line,
 		character: 0,
-	  };
-	  const end = {
-		line: position.line + 1,
-		character: 0,
-	  };
+	};
+	const end = {
+	line: position.line + 1,
+	character: 0,
+	};
 
-    const text = document.getText({ start, end }).replace(/[^\w\\$\\-]/g, " ");
+    const line = document.getText({ start, end });
+	//check if line is a comment, if so return empty word
+	if(line.charAt(0) === '#')
+		return "";
+
+	const text = line.replace(/[^\w\\$\\-]/g, " ");
     const index = document.offsetAt(position) - document.offsetAt(start);
 	const first = text.lastIndexOf(' ', index);
 	const last = text.indexOf(' ', index);
@@ -159,25 +171,59 @@ function getWord(document: TextDocument, position: Position)
 	return word;
 }
 
+
+
+/*	This function identifies whether a term is not a keyword and needs a definition
+*	INPUTS: String search term 
+*			Uri of file location containing search term
+*	OUTPUTS: Boolean Value 
+*				True: likely to have a definition
+*				False: keyword, whitespace, or other invalid search teram
+*/
+function needsDefinition(uri: string, searchTerm: string){
+
+	if( searchTerm === ' ' || searchTerm === '')
+		return false;
+
+	//get relevant list of keywords for the filetype
+	const fileExtension = path.extname(uri);
+
+	let searchList = null;
+	switch (fileExtension){
+		case ".te": searchList = teCompletionItems;	break;
+		case ".if": searchList =  ifCompletionItems; break;
+		case ".spt": searchList =  sptCompletionItems; break;
+		case ".fc": searchList = fcCompletionItems; break;
+	}
+
+	if (searchList !== null){
+		//identify if search term is a known keyword
+		for (const index in searchList) {
+			if(searchList[index].label === searchTerm)
+				return false;
+			}
+	}
+	//somehow not in correct file type
+	else
+		return false;
+	return true;
+}
+
 //This handler will provide hover information from the server
 connection.onHover(({ textDocument, position }): Hover | undefined => {
 	
     const document = documents.get(textDocument.uri);
-
-
 	if(document == undefined)
 		return undefined;
+	const searchTerm = getWord(document, position);
 
-	const word = getWord(document, position);
-	
-    if (word !== '') {
-
-		//TO-DO: Add filter to only search if it is something that will have a definition
+    if (needsDefinition(document.uri, searchTerm)) {
 		//TO-DO: Connect to Parser to search by word and then display the definition
+		//Requires Location object
 		return {
 		contents: {
 			kind: 'markdown',
-			value: `${word}`,
+			value: `${searchTerm}`,
 		},
 		};
     }
@@ -192,22 +238,18 @@ connection.onDefinition(( {textDocument, position }): Definition | undefined => 
 	const document = documents.get(textDocument.uri);
 	if(document == undefined)
 		  return undefined;
-
-	//hovered word
 	const searchTerm = getWord(document, position);
-	
-	//TO_DO: Add filter to only search if it is something that will have a definition
-	if(searchTerm != "interface")
-		return undefined;
 
-	//TO_DO: Connect to parser by the search term
-	//Parser should provide at Location object of the document uri and line position of start and end of defintiion
+	if( needsDefinition(document.uri, searchTerm)){
+		//TO_DO: Connect to parser by the search term
+		//Parser should provide at Location object of the document uri and line position of start and end of defintiion
+		return Location.create( document.uri, {
+			start: { line: 2, character: 5 },
+			end: { line: 4, character: 6 }
+		  });
+	}
 
-	let newURI = path.join(path.dirname(textDocument.uri), "seunshare.fc");
-	return Location.create(newURI, {
-	  start: { line: 2, character: 5 },
-	  end: { line: 4, character: 6 }
-	});
+	return undefined;
 });
 
 
