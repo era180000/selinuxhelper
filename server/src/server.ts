@@ -29,11 +29,8 @@ import {
 	TextDocument,
 } from 'vscode-languageserver-textdocument';
 
-import { URI } from 'vscode-languageserver/node';
 import * as path from 'path';
 import { serialize } from 'v8';
-//import * as fs from 'fs';
-//import * as glob from 'glob';
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -49,7 +46,6 @@ let hasDiagnosticRelatedInformationCapability = false;
 connection.onInitialize((params: InitializeParams) => {
 	const capabilities = params.capabilities;
 
-	//params.capabilities.documentSelector = true;
 	// Does the client support the `workspace/configuration` request?
 	// If not, we fall back using global settings.
 	hasConfigurationCapability = !!(
@@ -95,37 +91,6 @@ connection.onInitialized(() => {
 			connection.console.log('Workspace folder change event received.');
 		});
 	}
-});
-
-// The example settings
-interface ExampleSettings {
-	maxNumberOfProblems: number;
-}
-
-// The global settings, used when the `workspace/configuration` request is not supported by the client.
-// Please note that this is not the case when using this server with the client provided in this example
-// but could happen with other clients.
-const defaultSettings: ExampleSettings = { maxNumberOfProblems: 1000 };
-let globalSettings: ExampleSettings = defaultSettings;
-
-// Cache the settings of all open documents
-const documentSettings: Map<string, Thenable<ExampleSettings>> = new Map();
-
-connection.onDidChangeConfiguration(change => {
-	if (hasConfigurationCapability) {
-		// Reset all cached document settings
-		documentSettings.clear();
-	} else {
-		globalSettings = <ExampleSettings>(
-			(change.settings.languageServerExample || defaultSettings)
-		);
-	}
-});
-
-
-// Only keep settings for open documents
-documents.onDidClose(e => {
-	documentSettings.delete(e.document.uri);
 });
 
 // The content of a text document has changed. This event is emitted
