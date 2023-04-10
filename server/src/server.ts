@@ -6,16 +6,17 @@
 import {
 	createConnection,
 	TextDocuments,
-	Diagnostic,
-	DiagnosticSeverity,
 	ProposedFeatures,
 	InitializeParams,
 	DidChangeConfigurationNotification,
 	CompletionItem,
-	CompletionItemKind,
+	Definition,
+	Location,
+	Hover,
 	TextDocumentPositionParams,
 	TextDocumentSyncKind,
 	InitializeResult,
+	Position,
 
 } from 'vscode-languageserver/node';
 
@@ -67,8 +68,9 @@ connection.onInitialize((params: InitializeParams) => {
 			// Tell the client that this server supports code completion.
 			completionProvider: {
 				resolveProvider: true,
-			}
-			//hoverProvider: true
+			},
+			hoverProvider: true,
+			definitionProvider: true
 		}
 	};
 	if (hasWorkspaceFolderCapability) {
@@ -116,30 +118,8 @@ connection.onDidChangeConfiguration(change => {
 			(change.settings.languageServerExample || defaultSettings)
 		);
 	}
-
-	// Revalidate all open text documents
-	//documents.all().forEach(validateTextDocument);
 });
 
-
-//DEFAULT FUNCTION FROM EXAMPLE
-//TODO REMOVE/REPLACE
-/*
-function getDocumentSettings(resource: string): Thenable<ExampleSettings> {
-	if (!hasConfigurationCapability) {
-		return Promise.resolve(globalSettings);
-	}
-	let result = documentSettings.get(resource);
-	if (!result) {
-		result = connection.workspace.getConfiguration({
-			scopeUri: resource,
-			section: 'languageServerExample'
-		});
-		documentSettings.set(resource, result);
-	}
-	return result;
-}
-*/
 
 // Only keep settings for open documents
 documents.onDidClose(e => {
@@ -152,63 +132,84 @@ documents.onDidChangeContent(change => {
 	//validateTextDocument(change.document);
 });
 
-//DEFAULT VALIDATION FROM TUTORIAL
-//TODO: REMOVE/REPLACE
-/*
-async function validateTextDocument(textDocument: TextDocument): Promise<void> {
-    
-	// In this simple example we get the settings for every validate run.
-	const settings = await getDocumentSettings(textDocument.uri);
-	
-	// The validator creates diagnostics for all uppercase words length 2 and more
-	const text = textDocument.getText();
-	const pattern = /\b[A-Z]{2,}\b/g;
-	let m: RegExpExecArray | null;
-
-	let problems = 0;
-	const diagnostics: Diagnostic[] = [];
-	while ((m = pattern.exec(text)) && problems < settings.maxNumberOfProblems) {
-		problems++;
-		const diagnostic: Diagnostic = {
-			severity: DiagnosticSeverity.Warning,
-			range: {
-				start: textDocument.positionAt(m.index),
-				end: textDocument.positionAt(m.index + m[0].length)
-			},
-			message: `${m[0]} is all uppercase.`,
-			source: 'ex'
-		};
-		if (hasDiagnosticRelatedInformationCapability) {
-			diagnostic.relatedInformation = [
-				{
-					location: {
-						uri: textDocument.uri,
-						range: Object.assign({}, diagnostic.range)
-					},
-					message: 'Spelling matters'
-				},
-				{
-					location: {
-						uri: textDocument.uri,
-						range: Object.assign({}, diagnostic.range)
-					},
-					message: 'Particularly for names'
-				}
-			];
-		}
-		diagnostics.push(diagnostic);
-	}
-
-	// Send the computed diagnostics to VSCode.
-	connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
-    
-}
-*/
 
 connection.onDidChangeWatchedFiles(_change => {
 	// Monitored files have change in VSCode
 	connection.console.log('We received an file change event');
 });
+
+
+//This function identifies the hovered word and seperates it from any surrounding text
+function getWord(document: TextDocument, position: Position)
+{
+	const start = {
+		line: position.line,
+		character: 0,
+	  };
+	  const end = {
+		line: position.line + 1,
+		character: 0,
+	  };
+
+    const text = document.getText({ start, end }).replace(/[^\w\\$\\-]/g, " ");
+    const index = document.offsetAt(position) - document.offsetAt(start);
+	const first = text.lastIndexOf(' ', index);
+	const last = text.indexOf(' ', index);
+	const word = text.substring(first !== -1 ? first+1 : 0, last !== -1 ? last : text.length - 1);
+	return word;
+}
+
+//This handler will provide hover information from the server
+connection.onHover(({ textDocument, position }): Hover | undefined => {
+	
+    const document = documents.get(textDocument.uri);
+
+
+	if(document == undefined)
+		return undefined;
+
+	const word = getWord(document, position);
+	
+    if (word !== '') {
+
+		//TO-DO: Add filter to only search if it is something that will have a definition
+		//TO-DO: Connect to Parser to search by word and then display the definition
+		return {
+		contents: {
+			kind: 'markdown',
+			value: `${word}`,
+		},
+		};
+    }
+
+    return undefined;
+});
+
+
+//This handler provides the definition location on hover over a word
+connection.onDefinition(( {textDocument, position }): Definition | undefined => {
+
+	const document = documents.get(textDocument.uri);
+	if(document == undefined)
+		  return undefined;
+
+	//hovered word
+	const searchTerm = getWord(document, position);
+	
+	//TO_DO: Add filter to only search if it is something that will have a definition
+	if(searchTerm != "interface")
+		return undefined;
+
+	//TO_DO: Connect to parser by the search term
+	//Parser should provide at Location object of the document uri and line position of start and end of defintiion
+
+	let newURI = path.join(path.dirname(textDocument.uri), "seunshare.fc");
+	return Location.create(newURI, {
+	  start: { line: 2, character: 5 },
+	  end: { line: 4, character: 6 }
+	});
+});
+
 
 // This handler provides the initial list of the completion items.
 connection.onCompletion(
