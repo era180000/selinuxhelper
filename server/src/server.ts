@@ -185,15 +185,11 @@ connection.onDefinition(( {textDocument, position }): Definition | undefined => 
 	if( needsDefinition(document.uri, searchTerm)){
 		//TO_DO: Connect to parser by the search term
 		//Parser should provide at Location object of the document uri and line position of start and end of defintiion
-		const Locations = [
-			Location.create( document.uri, {
+		
+		return Location.create( document.uri, {
 			start: { line: 2, character: 5 },
-			end: { line: 4, character: 6 }}), 
-			Location.create( document.uri, {
-				start: { line: 6, character: 5 },
-				end: { line: 8, character: 6 }})
-		]
-		return Locations;
+			end: { line: 4, character: 6 }
+			});
 	}
 
 	return undefined;
