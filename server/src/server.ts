@@ -67,7 +67,7 @@ connection.onInitialize((params: InitializeParams) => {
 			completionProvider: {
 				resolveProvider: true,
 			},
-			hoverProvider: true,
+			//hoverProvider: true,
 			definitionProvider: true
 		}
 	};
@@ -174,29 +174,6 @@ function needsDefinition(uri: string, searchTerm: string){
 	return true;
 }
 
-//This handler will provide hover information from the server
-connection.onHover(({ textDocument, position }): Hover | undefined => {
-	
-    const document = documents.get(textDocument.uri);
-	if(document == undefined)
-		return undefined;
-	const searchTerm = getWord(document, position);
-
-    if (needsDefinition(document.uri, searchTerm)) {
-		//TO-DO: Connect to Parser to search by word and then display the definition
-		//Requires Location object
-		return {
-		contents: {
-			kind: 'markdown',
-			value: `${searchTerm}`,
-		},
-		};
-    }
-
-    return undefined;
-});
-
-
 //This handler provides the definition location on hover over a word
 connection.onDefinition(( {textDocument, position }): Definition | undefined => {
 
@@ -208,10 +185,15 @@ connection.onDefinition(( {textDocument, position }): Definition | undefined => 
 	if( needsDefinition(document.uri, searchTerm)){
 		//TO_DO: Connect to parser by the search term
 		//Parser should provide at Location object of the document uri and line position of start and end of defintiion
-		return Location.create( document.uri, {
+		const Locations = [
+			Location.create( document.uri, {
 			start: { line: 2, character: 5 },
-			end: { line: 4, character: 6 }
-		  });
+			end: { line: 4, character: 6 }}), 
+			Location.create( document.uri, {
+				start: { line: 6, character: 5 },
+				end: { line: 8, character: 6 }})
+		]
+		return Locations;
 	}
 
 	return undefined;
