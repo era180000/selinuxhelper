@@ -1,6 +1,6 @@
 # **SElinuxhelper README**
 
-![SELinux Penguin](images/selinux-penguin.png)
+![SELinux Penguin](client/images/selinux-penguin.png)
 
 SElinuxhelper is a VS Code exentsion that allows syntax highlighting for various types of SELinux files. 
 
@@ -8,13 +8,18 @@ The following are the supported file types: **.te, .if, .fc, and .spt.**
 
 # **Features**
 
+## <u> Definition Hover and Go-To </u>
+
+To see the definition hold control while hovering over a term.
+Use Ctrl + Click to open the file location containing the definition
+
 ## <u> Comment Highlighting </u>
 
 Comments in all files are colored **<span style="color:#6a9955">green</span>**.
 
 Example:
 
-![SELinux Comments](images/SELinux-Comments-Highlighting-Example.png)
+![SELinux Comments](client/images/SELinux-Comments-Highlighting-Example.png)
 
 ## <u> .te Syntax Highlighting </u>
 
@@ -26,7 +31,7 @@ For .te files, the following are the colors for each file specific blocks of cod
 
 Example:
 
-![SELinux te](images/SELinux-te-Highlighting-Example.png)
+![SELinux te](client/images/SELinux-te-Highlighting-Example.png)
 
 ## <u> .if Syntax Highlighting </u>
 
@@ -36,7 +41,7 @@ For .if files, the following are the colors for each file specific blocks of cod
 
 Example:
 
-![SELinux if](images/SELinux-if-Highlighting-Example.png)
+![SELinux if](client/images/SELinux-if-Highlighting-Example.png)
 
 ## <u> .fc Syntax Highlighting </u>
 
@@ -47,7 +52,7 @@ For .fc files, the following are the colors for each file specific blocks of cod
 
 Example:
  
-![SELinux fc](images/SELinux-fc-Highlighting-Example.png)
+![SELinux fc](client/images/SELinux-fc-Highlighting-Example.png)
 
 ## <u> .spt Syntax Highlighting </u>
 
@@ -59,7 +64,7 @@ For .spt files, the following are the colors for each file specific blocks of co
 
 Example:
 
-![SELinux spt](images/SELinux-spt-Highlighting-Example.png)
+![SELinux spt](client/images/SELinux-spt-Highlighting-Example.png)
 
 # Requirements
 

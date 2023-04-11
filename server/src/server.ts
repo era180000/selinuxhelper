@@ -12,7 +12,6 @@ import {
 	CompletionItem,
 	Definition,
 	Location,
-	Hover,
 	TextDocumentPositionParams,
 	TextDocumentSyncKind,
 	InitializeResult,
@@ -30,7 +29,6 @@ import {
 } from 'vscode-languageserver-textdocument';
 
 import * as path from 'path';
-import { serialize } from 'v8';
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -67,7 +65,6 @@ connection.onInitialize((params: InitializeParams) => {
 			completionProvider: {
 				resolveProvider: true,
 			},
-			//hoverProvider: true,
 			definitionProvider: true
 		}
 	};
@@ -125,8 +122,9 @@ function getWord(document: TextDocument, position: Position)
 
     const line = document.getText({ start, end });
 	//check if line is a comment, if so return empty word
-	if(line.charAt(0) === '#')
+	if(line.charAt(0) === '#'){
 		return "";
+	}
 
 	const text = line.replace(/[^\w\\$\\-]/g, " ");
     const index = document.offsetAt(position) - document.offsetAt(start);
@@ -147,8 +145,9 @@ function getWord(document: TextDocument, position: Position)
 */
 function needsDefinition(uri: string, searchTerm: string){
 
-	if( searchTerm === ' ' || searchTerm === '')
+	if( searchTerm === ' ' || searchTerm === ''){
 		return false;
+	}
 
 	//get relevant list of keywords for the filetype
 	const fileExtension = path.extname(uri);
@@ -164,13 +163,15 @@ function needsDefinition(uri: string, searchTerm: string){
 	if (searchList !== null){
 		//identify if search term is a known keyword
 		for (const index in searchList) {
-			if(searchList[index].label === searchTerm)
+			if(searchList[index].label === searchTerm){
 				return false;
 			}
+		}
 	}
 	//somehow not in correct file type
-	else
+	else {
 		return false;
+	}
 	return true;
 }
 
@@ -178,8 +179,9 @@ function needsDefinition(uri: string, searchTerm: string){
 connection.onDefinition(( {textDocument, position }): Definition | undefined => {
 
 	const document = documents.get(textDocument.uri);
-	if(document == undefined)
+	if(document === undefined){
 		  return undefined;
+	}
 	const searchTerm = getWord(document, position);
 
 	if( needsDefinition(document.uri, searchTerm)){
