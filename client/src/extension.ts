@@ -4,8 +4,8 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as path from 'path';
+import * as vscode from 'vscode';
 import { workspace, ExtensionContext } from 'vscode';
-
 import {
 	LanguageClient,
 	LanguageClientOptions,
@@ -33,9 +33,7 @@ export function activate(context: ExtensionContext) {
 
 	// Options to control the language client
 	const clientOptions: LanguageClientOptions = {
-		// Register the server for plain text documents
 		documentSelector: [
-			//{ scheme: 'file', language: 'plaintext' },
 			{ scheme: 'file', language: 'te'},
 			{ scheme: 'file', language: 'if'},
 			{ scheme: 'file', language: 'spt'},
@@ -43,7 +41,11 @@ export function activate(context: ExtensionContext) {
 	],
 		synchronize: {
 			// Notify the server about file changes to '.clientrc files contained in the workspace
+			configurationSection: 'seLinuxHelper',
 			fileEvents: workspace.createFileSystemWatcher('**/.clientrc')
+		},
+		initializationOptions: {
+			someSetting: vscode.workspace.getConfiguration('seLinuxHelper').get('someSetting'),
 		}
 	};
 

@@ -34,6 +34,9 @@ import * as path from 'path';
 // Also include all preview / proposed LSP features.
 const connection = createConnection(ProposedFeatures.all);
 
+//global settings
+let someSetting: string;
+
 // Create a simple text document manager.
 const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 
@@ -41,7 +44,7 @@ let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
 let hasDiagnosticRelatedInformationCapability = false;
 
-connection.onInitialize((params: InitializeParams) => {
+connection.onInitialize( async (params: InitializeParams) => {
 	const capabilities = params.capabilities;
 
 	// Does the client support the `workspace/configuration` request?
@@ -57,6 +60,9 @@ connection.onInitialize((params: InitializeParams) => {
 		capabilities.textDocument.publishDiagnostics &&
 		capabilities.textDocument.publishDiagnostics.relatedInformation
 	);
+
+	someSetting = params.initializationOptions.someSetting;
+	connection.console.log(someSetting);
 
 	const result: InitializeResult = {
 		capabilities: {
@@ -97,6 +103,51 @@ documents.onDidChangeContent(change => {
 });
 
 
+// The example settings
+interface ExampleSettings {
+	maxNumberOfProblems: number;
+}
+
+function getDocumentSettings(resource: string): Thenable<ExampleSettings> {
+	if (!hasConfigurationCapability) {
+		return Promise.resolve(globalSettings);
+	}
+	let result = documentSettings.get(resource);
+	if (!result) {
+		result = connection.workspace.getConfiguration({
+			scopeUri: resource,
+			section: 'seLinuxHelper'
+		});
+		documentSettings.set(resource, result);
+	}
+	return result;
+}
+
+// The global settings, used when the `workspace/configuration` request is not supported by the client.
+// Please note that this is not the case when using this server with the client provided in this example
+// but could happen with other clients.
+const defaultSettings: ExampleSettings = { maxNumberOfProblems: 1000 };
+let globalSettings: ExampleSettings = defaultSettings;
+
+// Cache the settings of all open documents
+const documentSettings: Map<string, Thenable<ExampleSettings>> = new Map();
+
+connection.onDidChangeConfiguration(change => {
+	if (hasConfigurationCapability) {
+		// Reset all cached document settings
+		documentSettings.clear();
+	} else {
+		globalSettings = <ExampleSettings>(
+			(change.settings.languageServerExample || defaultSettings)
+		);
+	}
+});
+
+
+// Only keep settings for open documents
+documents.onDidClose(e => {
+	documentSettings.delete(e.document.uri);
+});
 connection.onDidChangeWatchedFiles(_change => {
 	// Monitored files have change in VSCode
 	connection.console.log('We received an file change event');
@@ -230,8 +281,6 @@ connection.onCompletionResolve(
 		return item;
 	}
 );
-
-
 
 // Make the text document manager listen on the connection
 // for open, change and close text document events
