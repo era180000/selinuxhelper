@@ -6,16 +6,17 @@
 import {
 	createConnection,
 	TextDocuments,
-	Diagnostic,
-	DiagnosticSeverity,
 	ProposedFeatures,
 	InitializeParams,
 	DidChangeConfigurationNotification,
 	CompletionItem,
-	CompletionItemKind,
+	Definition,
+	Location,
+	Hover,
 	TextDocumentPositionParams,
 	TextDocumentSyncKind,
 	InitializeResult,
+	Position,
 
 } from 'vscode-languageserver/node';
 
@@ -29,8 +30,7 @@ import {
 } from 'vscode-languageserver-textdocument';
 
 import * as path from 'path';
-//import * as fs from 'fs';
-//import * as glob from 'glob';
+import { serialize } from 'v8';
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -46,7 +46,6 @@ let hasDiagnosticRelatedInformationCapability = false;
 connection.onInitialize((params: InitializeParams) => {
 	const capabilities = params.capabilities;
 
-	//params.capabilities.documentSelector = true;
 	// Does the client support the `workspace/configuration` request?
 	// If not, we fall back using global settings.
 	hasConfigurationCapability = !!(
@@ -67,8 +66,9 @@ connection.onInitialize((params: InitializeParams) => {
 			// Tell the client that this server supports code completion.
 			completionProvider: {
 				resolveProvider: true,
-			}
-			//hoverProvider: true
+			},
+			//hoverProvider: true,
+			definitionProvider: true
 		}
 	};
 	if (hasWorkspaceFolderCapability) {
@@ -93,122 +93,108 @@ connection.onInitialized(() => {
 	}
 });
 
-// The example settings
-interface ExampleSettings {
-	maxNumberOfProblems: number;
-}
-
-// The global settings, used when the `workspace/configuration` request is not supported by the client.
-// Please note that this is not the case when using this server with the client provided in this example
-// but could happen with other clients.
-const defaultSettings: ExampleSettings = { maxNumberOfProblems: 1000 };
-let globalSettings: ExampleSettings = defaultSettings;
-
-// Cache the settings of all open documents
-const documentSettings: Map<string, Thenable<ExampleSettings>> = new Map();
-
-connection.onDidChangeConfiguration(change => {
-	if (hasConfigurationCapability) {
-		// Reset all cached document settings
-		documentSettings.clear();
-	} else {
-		globalSettings = <ExampleSettings>(
-			(change.settings.languageServerExample || defaultSettings)
-		);
-	}
-
-	// Revalidate all open text documents
-	//documents.all().forEach(validateTextDocument);
-});
-
-
-//DEFAULT FUNCTION FROM EXAMPLE
-//TODO REMOVE/REPLACE
-/*
-function getDocumentSettings(resource: string): Thenable<ExampleSettings> {
-	if (!hasConfigurationCapability) {
-		return Promise.resolve(globalSettings);
-	}
-	let result = documentSettings.get(resource);
-	if (!result) {
-		result = connection.workspace.getConfiguration({
-			scopeUri: resource,
-			section: 'languageServerExample'
-		});
-		documentSettings.set(resource, result);
-	}
-	return result;
-}
-*/
-
-// Only keep settings for open documents
-documents.onDidClose(e => {
-	documentSettings.delete(e.document.uri);
-});
-
 // The content of a text document has changed. This event is emitted
 // when the text document first opened or when its content has changed.
 documents.onDidChangeContent(change => {
-	//validateTextDocument(change.document);
+	//TO-DO: Update Parser
 });
 
-//DEFAULT VALIDATION FROM TUTORIAL
-//TODO: REMOVE/REPLACE
-/*
-async function validateTextDocument(textDocument: TextDocument): Promise<void> {
-    
-	// In this simple example we get the settings for every validate run.
-	const settings = await getDocumentSettings(textDocument.uri);
-	
-	// The validator creates diagnostics for all uppercase words length 2 and more
-	const text = textDocument.getText();
-	const pattern = /\b[A-Z]{2,}\b/g;
-	let m: RegExpExecArray | null;
-
-	let problems = 0;
-	const diagnostics: Diagnostic[] = [];
-	while ((m = pattern.exec(text)) && problems < settings.maxNumberOfProblems) {
-		problems++;
-		const diagnostic: Diagnostic = {
-			severity: DiagnosticSeverity.Warning,
-			range: {
-				start: textDocument.positionAt(m.index),
-				end: textDocument.positionAt(m.index + m[0].length)
-			},
-			message: `${m[0]} is all uppercase.`,
-			source: 'ex'
-		};
-		if (hasDiagnosticRelatedInformationCapability) {
-			diagnostic.relatedInformation = [
-				{
-					location: {
-						uri: textDocument.uri,
-						range: Object.assign({}, diagnostic.range)
-					},
-					message: 'Spelling matters'
-				},
-				{
-					location: {
-						uri: textDocument.uri,
-						range: Object.assign({}, diagnostic.range)
-					},
-					message: 'Particularly for names'
-				}
-			];
-		}
-		diagnostics.push(diagnostic);
-	}
-
-	// Send the computed diagnostics to VSCode.
-	connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
-    
-}
-*/
 
 connection.onDidChangeWatchedFiles(_change => {
 	// Monitored files have change in VSCode
 	connection.console.log('We received an file change event');
 });
+
+
+/*	This function identifies the hovered word and seperates it from any surrounding text
+*	INPUTS: document: TextDocument of hovered word
+			position: Position of hovered word in Text Document
+*	OUTPUTS: String representing the hovered word seperated from any adjoining punctuation 
+*				or separator markings 
+*/
+function getWord(document: TextDocument, position: Position)
+{
+	const start = {
+		line: position.line,
+		character: 0,
+	};
+	const end = {
+	line: position.line + 1,
+	character: 0,
+	};
+
+    const line = document.getText({ start, end });
+	//check if line is a comment, if so return empty word
+	if(line.charAt(0) === '#')
+		return "";
+
+	const text = line.replace(/[^\w\\$\\-]/g, " ");
+    const index = document.offsetAt(position) - document.offsetAt(start);
+	const first = text.lastIndexOf(' ', index);
+	const last = text.indexOf(' ', index);
+	const word = text.substring(first !== -1 ? first+1 : 0, last !== -1 ? last : text.length - 1);
+	return word;
+}
+
+
+
+/*	This function identifies whether a term is not a keyword and needs a definition
+*	INPUTS: String search term 
+*			Uri of file location containing search term
+*	OUTPUTS: Boolean Value 
+*				True: likely to have a definition
+*				False: keyword, whitespace, or other invalid search teram
+*/
+function needsDefinition(uri: string, searchTerm: string){
+
+	if( searchTerm === ' ' || searchTerm === '')
+		return false;
+
+	//get relevant list of keywords for the filetype
+	const fileExtension = path.extname(uri);
+
+	let searchList = null;
+	switch (fileExtension){
+		case ".te": searchList = teCompletionItems;	break;
+		case ".if": searchList =  ifCompletionItems; break;
+		case ".spt": searchList =  sptCompletionItems; break;
+		case ".fc": searchList = fcCompletionItems; break;
+	}
+
+	if (searchList !== null){
+		//identify if search term is a known keyword
+		for (const index in searchList) {
+			if(searchList[index].label === searchTerm)
+				return false;
+			}
+	}
+	//somehow not in correct file type
+	else
+		return false;
+	return true;
+}
+
+//This handler provides the definition location on hover over a word
+connection.onDefinition(( {textDocument, position }): Definition | undefined => {
+
+	const document = documents.get(textDocument.uri);
+	if(document == undefined)
+		  return undefined;
+	const searchTerm = getWord(document, position);
+
+	if( needsDefinition(document.uri, searchTerm)){
+		//TO_DO: Connect to parser by the search term
+		//Parser should provide at Location object of the document uri and line position of start and end of defintiion
+		
+		return Location.create( document.uri, {
+			start: { line: 2, character: 5 },
+			end: { line: 4, character: 6 }
+			});
+	}
+
+	return undefined;
+});
+
 
 // This handler provides the initial list of the completion items.
 connection.onCompletion(
