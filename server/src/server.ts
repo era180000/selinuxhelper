@@ -29,6 +29,12 @@ import {
 } from 'vscode-languageserver-textdocument';
 
 import * as path from 'path';
+import * as fs from 'fs';
+import { CharStream, CharStreams, CommonTokenStream, FileStream, ParseTreeWalker } from 'antlr4';
+import SELinuxLexer from './antlr/SELinuxLexer';
+import SELinuxParser from './antlr/SELinuxParser';
+import { SymbolTable } from 'antlr4-c3';
+import SELinuxListener from './antlr/SELinuxListener';
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -102,7 +108,7 @@ documents.onDidChangeContent(change => {
 	//TO-DO: Update Parser
 });
 
-
+/*
 // The example settings
 interface ExampleSettings {
 	maxNumberOfProblems: number;
@@ -142,11 +148,11 @@ connection.onDidChangeConfiguration(change => {
 		);
 	}
 });
-
+*/
 
 // Only keep settings for open documents
 documents.onDidClose(e => {
-	documentSettings.delete(e.document.uri);
+	//documentSettings.delete(e.document.uri);
 });
 connection.onDidChangeWatchedFiles(_change => {
 	// Monitored files have change in VSCode
@@ -226,6 +232,19 @@ function needsDefinition(uri: string, searchTerm: string){
 	return true;
 }
 
+async function parseFile(filePath: string): Promise<void> {
+	//const input = "your text to parse here"\\
+	const chars = new CharStream(fs.readFileSync(filePath, 'utf-8')); // replace this with a FileStream as required
+	const lexer = new SELinuxLexer(chars);
+	const tokens = new CommonTokenStream(lexer);
+	const parser = new SELinuxParser(tokens);
+	const listener = new SELinuxListener();
+	const tree = parser.file();
+	
+	const walker = new ParseTreeWalker();
+	walker.walk(listener, tree);
+  }
+
 //This handler provides the definition location on hover over a word
 connection.onDefinition(( {textDocument, position }): Definition | undefined => {
 
@@ -238,7 +257,17 @@ connection.onDefinition(( {textDocument, position }): Definition | undefined => 
 	if( needsDefinition(document.uri, searchTerm)){
 		//TO_DO: Connect to parser by the search term
 		//Parser should provide at Location object of the document uri and line position of start and end of defintiion
-		
+		//let input = CharStreams.fromString(document.getText());
+		//let lexer = new SELinuxLexer(input);
+		//let parser = new SELinuxParser(new CommonTokenStream(lexer));
+		//let listener = new SELinuxListener();
+		//parser._parseListeners
+		//let parseTree = parser.file();
+
+		//let pos = position;
+		//let position = computeTokenPosition(parseTree, parser.inputStream, { line: pos.line + 1, column: pos.character });
+		//let symbolTableVisitor = new SymbolTableVisitor(textDocument.uri);
+
 		return Location.create( document.uri, {
 			start: { line: 2, character: 5 },
 			end: { line: 4, character: 6 }
