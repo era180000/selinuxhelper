@@ -234,14 +234,14 @@ function needsDefinition(uri: string, searchTerm: string){
 
 async function parseFile(filePath: string): Promise<void> {
 	//const input = "your text to parse here"\\
-	const chars = new CharStream(fs.readFileSync(filePath, 'utf-8')); // replace this with a FileStream as required
+	const chars = new CharStream(fs.readFileSync(filePath, 'utf-8')); 
 	const lexer = new SELinuxLexer(chars);
 	const tokens = new CommonTokenStream(lexer);
 	const parser = new SELinuxParser(tokens);
 	const listener = new SELinuxListener();
 	const tree = parser.file();
 	
-	const walker = new ParseTreeWalker();
+	let walker = new ParseTreeWalker();
 	walker.walk(listener, tree);
   }
 
