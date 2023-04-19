@@ -35,7 +35,9 @@ import * as path from 'path';
 const connection = createConnection(ProposedFeatures.all);
 
 //global settings
-let someSetting: string;
+let pathsIncluded: Array<String>;
+
+const defaultSettings:  Array<String> =  ["/usr/share/selinux/devel/include/"];
 
 // Create a simple text document manager.
 const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
@@ -61,8 +63,7 @@ connection.onInitialize( async (params: InitializeParams) => {
 		capabilities.textDocument.publishDiagnostics.relatedInformation
 	);
 
-	someSetting = params.initializationOptions.someSetting;
-	connection.console.log(someSetting);
+	pathsIncluded = params.initializationOptions.pathInclusion;
 
 	const result: InitializeResult = {
 		capabilities: {
@@ -91,7 +92,7 @@ connection.onInitialized(() => {
 	}
 	if (hasWorkspaceFolderCapability) {
 		connection.workspace.onDidChangeWorkspaceFolders(_event => {
-			connection.console.log('Workspace folder change event received.');
+			console.log('Workspace folder change event received.');
 		});
 	}
 });
@@ -99,57 +100,25 @@ connection.onInitialized(() => {
 // The content of a text document has changed. This event is emitted
 // when the text document first opened or when its content has changed.
 documents.onDidChangeContent(change => {
-	//TO-DO: Update Parser
+	//TO_DO: Update Parser
 });
 
-
-// The example settings
-interface ExampleSettings {
-	maxNumberOfProblems: number;
-}
-
-function getDocumentSettings(resource: string): Thenable<ExampleSettings> {
-	if (!hasConfigurationCapability) {
-		return Promise.resolve(globalSettings);
-	}
-	let result = documentSettings.get(resource);
-	if (!result) {
-		result = connection.workspace.getConfiguration({
-			scopeUri: resource,
-			section: 'seLinuxHelper'
-		});
-		documentSettings.set(resource, result);
-	}
-	return result;
-}
 
 // The global settings, used when the `workspace/configuration` request is not supported by the client.
 // Please note that this is not the case when using this server with the client provided in this example
 // but could happen with other clients.
-const defaultSettings: ExampleSettings = { maxNumberOfProblems: 1000 };
-let globalSettings: ExampleSettings = defaultSettings;
-
-// Cache the settings of all open documents
-const documentSettings: Map<string, Thenable<ExampleSettings>> = new Map();
 
 connection.onDidChangeConfiguration(change => {
-	if (hasConfigurationCapability) {
-		// Reset all cached document settings
-		documentSettings.clear();
-	} else {
-		globalSettings = <ExampleSettings>(
-			(change.settings.languageServerExample || defaultSettings)
-		);
+	if(change.settings !== undefined){
+		pathsIncluded = Array<String>(
+			(change.settings.seLinuxHelper.pathInclusion || defaultSettings)
+		);	
 	}
 });
 
-
-// Only keep settings for open documents
-documents.onDidClose(e => {
-	documentSettings.delete(e.document.uri);
-});
 connection.onDidChangeWatchedFiles(_change => {
 	// Monitored files have change in VSCode
+	//TO_DO: Update Parser for that document
 	connection.console.log('We received an file change event');
 });
 
@@ -228,7 +197,6 @@ function needsDefinition(uri: string, searchTerm: string){
 
 //This handler provides the definition location on hover over a word
 connection.onDefinition(( {textDocument, position }): Definition | undefined => {
-
 	const document = documents.get(textDocument.uri);
 	if(document === undefined){
 		  return undefined;
@@ -258,7 +226,6 @@ connection.onCompletion(
 		const uri = _textDocumentPosition.textDocument.uri;
 
 		const fileExtension = path.extname(uri);
-		//connection.console.log(fileExtension);
 		switch (fileExtension){
 			case ".te": return teCompletionItems;
 			case ".if": return ifCompletionItems;

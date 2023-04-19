@@ -41,11 +41,12 @@ export function activate(context: ExtensionContext) {
 	],
 		synchronize: {
 			// Notify the server about file changes to '.clientrc files contained in the workspace
+			//To do, notify changes to included paths or settings
 			configurationSection: 'seLinuxHelper',
 			fileEvents: workspace.createFileSystemWatcher('**/.clientrc')
 		},
 		initializationOptions: {
-			someSetting: vscode.workspace.getConfiguration('seLinuxHelper').get('someSetting'),
+			pathInclusion: vscode.workspace.getConfiguration('seLinuxHelper').get<Array<String>>('pathInclusion'),
 		}
 	};
 
