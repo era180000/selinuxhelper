@@ -12,13 +12,11 @@ import {
 	DidChangeConfigurationNotification,
 	CompletionItem,
 	Definition,
-	Location,
+	FileChangeType,
 	TextDocumentPositionParams,
 	TextDocumentSyncKind,
 	InitializeResult,
 	Position,
-	Hover,
-
 } from 'vscode-languageserver/node';
 
 import { URI } from "vscode-uri";
@@ -32,7 +30,6 @@ import {
 	TextDocument,
 } from 'vscode-languageserver-textdocument';
 
-import * as fs from 'fs';
 import * as path from 'path';
 
 const parser = new FileParser();
@@ -95,7 +92,11 @@ connection.onInitialize( async (params: InitializeParams) => {
 connection.onInitialized(() => {
 
 	//TO-DO: initialize parser for all files in setting
+	//go thorough and idenitfy all the file listed in the folder of pathsIncluded
+	//add all files in the current workspace that are right file extension
 
+	//put all those through parser
+	//anything that not in current workspace add to watched files
 	if (hasConfigurationCapability) {
 		// Register for all configuration changes.
 		connection.client.register(DidChangeConfigurationNotification.type, undefined);
@@ -132,12 +133,28 @@ connection.onDidChangeConfiguration(change => {
 
 });
 
-connection.onDidChangeWatchedFiles(_change => {
+connection.onDidChangeWatchedFiles(async _change => {
 	// Monitored files have change in VSCode
 
 	//TO_DO: Maybe connect to path settings for documents that are outside workspace
 	// not a priority
-	connection.console.log('We received an file change event');
+	for (let i = 0; i < _change.changes.length; i++) {
+		const change = _change.changes[i];
+		switch (change.type) {
+		  case FileChangeType.Created:
+			parser.parseFile(change.uri);
+			break;
+		  case FileChangeType.Deleted:
+			parser.removeFileParse(change.uri);
+			break;
+		  case FileChangeType.Changed:
+			parser.parseFile(change.uri);
+			break;
+		  default:
+			// do nothing
+			break;
+		}
+	  }
 });
 
 
@@ -229,7 +246,6 @@ connection.onDefinition(( {textDocument, position }): Definition | undefined => 
 
 	return undefined;
 });
-
 
 // This handler provides the initial list of the completion items.
 connection.onCompletion(

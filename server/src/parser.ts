@@ -39,7 +39,7 @@ export class FileParser {
     parseFile(uri: string) {
         //if this document has been parsed 
         if(this.documentList.indexOf(uri) !== -1){
-            this.reparseFile(uri);
+            this.removeFileParse(uri);
         }
 
         const filePath = URI.parse(uri).fsPath;
@@ -53,7 +53,6 @@ export class FileParser {
             case ".te": this.parseTE(document);	break;
             case ".if": this.parseIF(document); break;
             case ".spt": this.parseSPT(document); break;
-            case ".fc": this.parseFC(document); break;
         }
     }
 
@@ -106,12 +105,7 @@ export class FileParser {
 
         console.log(this.definitionTable);
     }
-
-    private parseFC(document: TextDocument){
-        //TO-DO: Add
-        console.log("PARSING FC");
-    }
-
+    
     private parseSPT(document: TextDocument){
         const text = document.getText();
         const lines = text.split(/\r?\n/);
@@ -153,38 +147,30 @@ export class FileParser {
         }
     }
 
-    private reparseFile(document: string){
-        this.removeFileParse(document);
-        delete this.documentList[this.documentList.indexOf(document)];
-    }
-
-
     //TO-DO: There is something wrong with this function idk
     removeFileParse(uri: string){
-        this.definitionTable.forEach((value, key, map) => {
-            if(Array.isArray(value)){
-                value.filter((value, index, array) => {
-                    if (value.uri === uri) {
-                      array.splice(index, 1);
-                    }
-                  });
 
-                if(value.length === 0){
-                    map.delete(key);
-                }
-                else if(value.length === 1){
-                    map.set(key, value[0]);
-                }
-            }
-            else if(value.uri = uri){
-                map.delete(key);
-            }
-        });
+        delete this.documentList[this.documentList.indexOf(uri)];
+        //go through the map
+        //for each symbol
+            //if the value is a list
+            // iterate through list and remove any matches
+            //  if at the end the list size is 0 delete symbol from map
+            //  if at the end the list size is 1, replace it with symbol and just the first value
+            //if the value is a single locations
+            //  check if the location matches uri
+            //  if so, remove from map
+    
     }
 
     //returns definition array for a symbol
     getLocations(symbol: string){
         return this.definitionTable.get(symbol);
+    }
+
+    clearTable(){
+        this.definitionTable = new Map<string, Array<Location> | Location>;
+        this.documentList = new Array<string>;
     }
 
   }
