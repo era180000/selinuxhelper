@@ -64,41 +64,44 @@ export class FileParser {
     private parseIF(document: TextDocument){
         const text = document.getText();
         const lines = text.split(/\r?\n/);
+        if(lines !== undefined){
+            for(let i = 0; i < lines.length; i++)
+            {
+                if (/^\s*(interface|template)\(/.test(lines[i])) { // check if line starts with "interface
+                    const match = lines[i].match(/(?<=`)(.*)(?=')/m);
+                    if(match) {
+                        //find end line of
+                        let startLine = i;
 
-        for(let i = 0; i < lines.length; i++)
-        {
-            if (/^\s*(interface|template)\(/.test(lines[i])) { // check if line starts with "interface
-                const match = lines[i].match(/(?<=`)(.*)(?=')/m);
-                if(match) {
-                    //find end line of
-                    let startLine = i;
-
-                    let parenthesisStack = new Array();
-                    parenthesisStack.push('(');
-                    do{
-                        let startChar = 0;
-                        if(i === startLine){
-                            startChar = lines[i].indexOf(match[0]);
-                        }
-                        for(let s = startChar; s < lines[i].length && parenthesisStack.length !== 0; s++)
-                        {
-                            if(lines[i].charAt(s) === '('){
-                                parenthesisStack.push('(');
+                        let parenthesisStack = new Array();
+                        parenthesisStack.push('(');
+                        do{
+                            let startChar = 0;
+                            if(i === startLine){
+                                startChar = lines[i].indexOf(match[0]);
                             }
-                            else if(lines[i].charAt(s) === ')')
+                            for(let s = startChar; s < lines[i].length && parenthesisStack.length !== 0; s++)
                             {
-                                parenthesisStack.pop();
+                                if(lines[i].charAt(s) === '('){
+                                    parenthesisStack.push('(');
+                                }
+                                else if(lines[i].charAt(s) === ')')
+                                {
+                                    parenthesisStack.pop();
+                                }
                             }
-                        }
-                        i++;
-                    }while(parenthesisStack.length !== 0);
-                    
-                    this.addLocation(match[0], Location.create(document.uri, {
-                        start: { line: startLine, character: 0 },
-                        end: { line: i-1, character: lines[i].length }
-                        })
-                    );
-                    i--;
+                            i++;
+
+                        console.log(match[0]);
+                        }while(parenthesisStack.length !== 0 && i < lines.length);
+                        
+                        this.addLocation(match[0], Location.create(document.uri, {
+                            start: { line: startLine, character: 0 },
+                            end: { line: i-1, character: lines[i-1].length }
+                            })
+                        );
+                        i--;
+                    }
                 }
             }
         }
@@ -138,7 +141,7 @@ export class FileParser {
                     
                     this.addLocation(match[0], Location.create(document.uri, {
                         start: { line: startLine, character: 0 },
-                        end: { line: i-1, character: lines[i].length }
+                        end: { line: i-1, character: lines[i-1].length }
                         })
                     );
                     i--;
@@ -168,11 +171,11 @@ export class FileParser {
                     }
                 }
                 // if at the end the list size is 0 delete symbol from map
-                if (value.length == 0){
+                if (value.length === 0){
                     this.definitionTable.delete(key);
                 }
                 //if at the end the list size is 1, replace it with symbol and just the first value
-                else if (value.length == 1){
+                else if (value.length === 1){
                     const singleLocation = value[0];
                     const singleKey = key;
                     this.definitionTable.delete(key);
