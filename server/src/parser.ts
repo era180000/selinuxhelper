@@ -92,7 +92,6 @@ export class FileParser {
                             }
                             i++;
 
-                        console.log(match[0]);
                         }while(parenthesisStack.length !== 0 && i < lines.length);
                         
                         this.addLocation(match[0], Location.create(document.uri, {

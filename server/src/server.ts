@@ -108,12 +108,15 @@ connection.onInitialized(() => {
 	}
 });
 
-// The content of a text document has changed. This event is emitted
-// when the text document first opened or when its content has changed.
-documents.onDidChangeContent(change => {
-	parser.parseFile(change.document.uri);
+
+connection.onDidSaveTextDocument(event => {
+	console.log("HERE");
+	parser.parseFile(event.textDocument.uri);
 });
 
+connection.onDidOpenTextDocument( event => {
+	parser.parseFile(event.textDocument.uri);
+});
 
 // The global settings, used when the `workspace/configuration` request is not supported by the client.
 // Please note that this is not the case when using this server with the client provided in this example
@@ -132,6 +135,8 @@ connection.onDidChangeConfiguration(change => {
 	}
 
 });
+
+
 
 connection.onDidChangeWatchedFiles(async _change => {
 	// Monitored files have change in VSCode
