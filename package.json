@@ -126,6 +126,7 @@
 	},
 	"dependencies": {
 		"fs": "^0.0.1-security",
-		"glob": "^9.3.2"
+		"glob": "^9.3.2",
+		"vscode-uri": "^3.0.7"
 	}
 }
