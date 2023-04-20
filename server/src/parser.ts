@@ -16,7 +16,6 @@ export class FileParser {
       this.documentList = new Array<string>;
     }
 
-
     addLocation(symbol: string, location: Location){
         let result = this.definitionTable.get(symbol);
         //else add it to the map
@@ -100,6 +99,7 @@ export class FileParser {
                         end: { line: i-1, character: lines[i].length }
                         })
                     );
+                    i--;
                 }
             }
         }
@@ -113,8 +113,44 @@ export class FileParser {
     }
 
     private parseSPT(document: TextDocument){
-        //TO-DO: Add
-        console.log("PARSING SPT");
+        const text = document.getText();
+        const lines = text.split(/\r?\n/);
+        for(let i = 0; i < lines.length; i++)
+        {
+            if (/^\s*define\(/.test(lines[i])) { // check if line starts with define
+                const match = lines[i].match(/(?<=`)([^']+)(?=')/m);
+                if(match) {
+                    let startLine = i;
+
+                    let parenthesisStack = new Array();
+                    parenthesisStack.push('(');
+                    do{
+                        let startChar = 0;
+                        if(i === startLine){
+                            startChar = lines[i].indexOf(match[0]);
+                        }
+                        for(let s = startChar; s < lines[i].length && parenthesisStack.length !== 0; s++)
+                        {
+                            if(lines[i].charAt(s) === '('){
+                                parenthesisStack.push('(');
+                            }
+                            else if(lines[i].charAt(s) === ')')
+                            {
+                                parenthesisStack.pop();
+                            }
+                        }
+                        i++;
+                    }while(parenthesisStack.length !== 0);
+                    
+                    this.addLocation(match[0], Location.create(document.uri, {
+                        start: { line: startLine, character: 0 },
+                        end: { line: i-1, character: lines[i].length }
+                        })
+                    );
+                    i--;
+                }
+            }
+        }
     }
 
     private reparseFile(document: string){
