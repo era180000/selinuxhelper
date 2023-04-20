@@ -3,6 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
+import { FileParser } from './parser';
 import {
 	createConnection,
 	TextDocuments,
@@ -16,8 +17,11 @@ import {
 	TextDocumentSyncKind,
 	InitializeResult,
 	Position,
+	Hover,
 
 } from 'vscode-languageserver/node';
+
+import { URI } from "vscode-uri";
 
 import { teCompletionItems } from './completionItems/te';
 import { fcCompletionItems } from './completionItems/fc';
@@ -28,7 +32,10 @@ import {
 	TextDocument,
 } from 'vscode-languageserver-textdocument';
 
+import * as fs from 'fs';
 import * as path from 'path';
+
+const parser = new FileParser();
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -86,6 +93,9 @@ connection.onInitialize( async (params: InitializeParams) => {
 });
 
 connection.onInitialized(() => {
+
+	//TO-DO: initialize parser for all files in setting
+
 	if (hasConfigurationCapability) {
 		// Register for all configuration changes.
 		connection.client.register(DidChangeConfigurationNotification.type, undefined);
@@ -100,7 +110,7 @@ connection.onInitialized(() => {
 // The content of a text document has changed. This event is emitted
 // when the text document first opened or when its content has changed.
 documents.onDidChangeContent(change => {
-	//TO_DO: Update Parser
+	parser.parseFile(change.document.uri);
 });
 
 
@@ -109,16 +119,24 @@ documents.onDidChangeContent(change => {
 // but could happen with other clients.
 
 connection.onDidChangeConfiguration(change => {
-	if(change.settings !== undefined){
-		pathsIncluded = Array<String>(
-			(change.settings.seLinuxHelper.pathInclusion || defaultSettings)
-		);	
+	if(change !== null) {
+		if(change.settings !== undefined){
+			pathsIncluded = Array<String>(
+				(change.settings.seLinuxHelper.pathInclusion || defaultSettings)
+			);	
+	
+			//TO-DO: Update parser to match new settings
+			// maybe just reparse every doc
+		}
 	}
+
 });
 
 connection.onDidChangeWatchedFiles(_change => {
 	// Monitored files have change in VSCode
-	//TO_DO: Update Parser for that document
+
+	//TO_DO: Maybe connect to path settings for documents that are outside workspace
+	// not a priority
 	connection.console.log('We received an file change event');
 });
 
@@ -204,13 +222,9 @@ connection.onDefinition(( {textDocument, position }): Definition | undefined => 
 	const searchTerm = getWord(document, position);
 
 	if( needsDefinition(document.uri, searchTerm)){
-		//TO_DO: Connect to parser by the search term
-		//Parser should provide at Location object of the document uri and line position of start and end of defintiion
-		
-		return Location.create( document.uri, {
-			start: { line: 2, character: 5 },
-			end: { line: 4, character: 6 }
-			});
+
+		let locations = parser.getLocations(searchTerm);
+		return locations;
 	}
 
 	return undefined;
