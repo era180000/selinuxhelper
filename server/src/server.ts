@@ -16,9 +16,12 @@ import {
 	TextDocumentPositionParams,
 	TextDocumentSyncKind,
 	InitializeResult,
-	Position
+	Position,
+	BulkRegistration
 } from 'vscode-languageserver/node';
 
+
+import * as vscode from 'vscode';
 import { teCompletionItems } from './completionItems/te';
 import { fcCompletionItems } from './completionItems/fc';
 import { ifCompletionItems } from './completionItems/if';
@@ -29,6 +32,8 @@ import {
 } from 'vscode-languageserver-textdocument';
 
 import * as path from 'path';
+import { parentPort } from 'worker_threads';
+
 
 const parser = new FileParser();
 
@@ -46,10 +51,10 @@ const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 
 let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
-let hasDiagnosticRelatedInformationCapability = false;
 
 connection.onInitialize( async (params: InitializeParams) => {
 	const capabilities = params.capabilities;
+
 
 	// Does the client support the `workspace/configuration` request?
 	// If not, we fall back using global settings.
@@ -58,11 +63,6 @@ connection.onInitialize( async (params: InitializeParams) => {
 	);
 	hasWorkspaceFolderCapability = !!(
 		capabilities.workspace && !!capabilities.workspace.workspaceFolders
-	);
-	hasDiagnosticRelatedInformationCapability = !!(
-		capabilities.textDocument &&
-		capabilities.textDocument.publishDiagnostics &&
-		capabilities.textDocument.publishDiagnostics.relatedInformation
 	);
 
 	pathsIncluded = params.initializationOptions.pathInclusion;
@@ -74,7 +74,7 @@ connection.onInitialize( async (params: InitializeParams) => {
 			completionProvider: {
 				resolveProvider: true,
 			},
-			definitionProvider: true
+			definitionProvider: true,
 		}
 	};
 	if (hasWorkspaceFolderCapability) {
@@ -104,6 +104,13 @@ connection.onInitialized(() => {
 			console.log('Workspace folder change event received.');
 		});
 	}
+});
+
+connection.onRequest('custom/delete', async (params) => {
+  // handle custom request
+  console.log(params.external);
+  parser.removeFileParse(params.external);
+  console.log(parser.definitionTable);
 });
 
 documents.onDidOpen( e =>

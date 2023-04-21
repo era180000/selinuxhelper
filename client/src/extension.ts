@@ -64,6 +64,13 @@ export function activate(context: ExtensionContext) {
 		clientOptions
 	);
 
+	vscode.workspace.onDidDeleteFiles( (e => {
+		for(let i = 0; i < e.files.length; i++)
+		{
+			client.sendRequest('custom/delete', e.files[i]);
+		}
+	}));
+
 	// Start the client. This will also launch the server
 	client.start();
 }
