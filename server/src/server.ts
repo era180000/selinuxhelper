@@ -86,11 +86,11 @@ connection.onInitialize(async (params: InitializeParams) => {
 
 connection.onInitialized(async () => {
 
-	parseAllIncludedPaths(pathsIncluded);
+	parseAllIncludedPaths(pathsIncluded, 'a');
 	let workspace = await connection.workspace.getWorkspaceFolders();
 	if(workspace !== null){
 		workspace.forEach(element => {
-			parseDirectory(URI.parse(element.uri).fsPath);
+			parseDirectory(URI.parse(element.uri).fsPath, 'a');
 		});
 	}
 
@@ -100,11 +100,16 @@ connection.onInitialized(async () => {
 	}
 });
 
-function processFile(filePath: string): void { //process file	
-	parser.parseFile(URI.file(filePath).toString());
+function processFile(filePath: string, mode: string): void { //process file	
+	if(mode === 'a'){
+		parser.parseFile(URI.file(filePath).toString());
+	}
+	else if(mode === 'r'){
+		parser.removeFileParse(URI.file(filePath).toString());
+	}
 }
 
-function parseDirectory(directoryPath: String): void { //parse entire directory
+function parseDirectory(directoryPath: String, mode: string): void { //parse entire directory
 	const dirPrim = directoryPath.toString(); //convert path to string primitive
 	if(fs.existsSync(dirPrim)) {
 		const files = fs.readdirSync(dirPrim); //read contents of directory
@@ -114,17 +119,19 @@ function parseDirectory(directoryPath: String): void { //parse entire directory
 			const stats = fs.statSync(fullPath); //get properties (is it a file or another directory)
 
 			if (stats.isDirectory()) { //if its a directory
-				parseDirectory(fullPath); //recursive parse that folder
+				parseDirectory(fullPath, mode); //recursive parse that folder
 			} else if (stats.isFile()) { //otherwise process singular file
-				processFile(fullPath);
+				processFile(fullPath, mode);
 			}
 		}
 	}
 }
 
-function parseAllIncludedPaths(path:Array<String>){ //for each path in the pathsIncluded initial param
+// 'a' is add to list
+// 'r' is remove from list
+function parseAllIncludedPaths(path:Array<String>, mode: string){ //for each path in the pathsIncluded initial param
 	path.forEach(element => {
-		parseDirectory(element); //parse that entire directory
+		parseDirectory(element, mode); //parse that entire directory
 	});
 	
 }
@@ -140,10 +147,14 @@ documents.onDidOpen(e => {
 
 connection.onDidChangeConfiguration(async change => {
 	if(change.settings !== null) {
+		
+		parseAllIncludedPaths(pathsIncluded, 'r');
+
 		pathsIncluded = Array<String>(
 			(change.settings.seLinuxHelper.pathInclusion || defaultSettings)
 		);
-		parseAllIncludedPaths(pathsIncluded);
+		
+		parseAllIncludedPaths(pathsIncluded, 'a');
 	}
 });
 
