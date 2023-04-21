@@ -150,9 +150,7 @@ connection.onDidChangeConfiguration(async change => {
 		
 		parseAllIncludedPaths(pathsIncluded, 'r');
 
-		pathsIncluded = Array<String>(
-			(change.settings.seLinuxHelper.pathInclusion || defaultSettings)
-		);
+		pathsIncluded = change.settings.seLinuxHelper.pathInclusion || defaultSettings;
 		
 		parseAllIncludedPaths(pathsIncluded, 'a');
 	}
