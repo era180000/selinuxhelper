@@ -30,7 +30,6 @@ import {
 } from 'vscode-languageserver-textdocument';
 
 import * as path from 'path';
-import { parentPort } from 'worker_threads';
 import * as fs from 'fs';
 
 const parser = new FileParser();
@@ -85,46 +84,40 @@ connection.onInitialize(async (params: InitializeParams) => {
 	return result;
 });
 
-connection.onInitialized(() => {
+connection.onInitialized(async () => {
 
-	//TO-DO: initialize parser for all files in setting
-	//go thorough and idenitfy all the file listed in the folder of pathsIncluded
-	//add all files in the current workspace that are right file extension
-
-	//put all those through parser
-	//anything that not in current workspace add to watched files
 	parseAllIncludedPaths(pathsIncluded);
-	//console.log(parser.definitionTable);
+	let workspace = await connection.workspace.getWorkspaceFolders();
+	if(workspace !== null){
+		workspace.forEach(element => {
+			parseDirectory(URI.parse(element.uri).fsPath);
+		});
+	}
+
 	if (hasConfigurationCapability) {
 		// Register for all configuration changes.
 		connection.client.register(DidChangeConfigurationNotification.type, undefined);
 	}
-	if (hasWorkspaceFolderCapability) {
-		connection.workspace.onDidChangeWorkspaceFolders(_event => {
-			console.log('Workspace folder change event received.');
-		});
-	}
 });
 
-function processFile(filePath: string): void { //process file
-	//console.log(`Processing file: ${filePath}`);
-	// const decodedPath = decodeURIComponent(filePath);
-	
+function processFile(filePath: string): void { //process file	
 	parser.parseFile(URI.file(filePath).toString());
 }
 
 function parseDirectory(directoryPath: String): void { //parse entire directory
 	const dirPrim = directoryPath.toString(); //convert path to string primitive
-	const files = fs.readdirSync(dirPrim); //read contents of directory
+	if(fs.existsSync(dirPrim)) {
+		const files = fs.readdirSync(dirPrim); //read contents of directory
 
-	for (const file of files) { //for each file in directory
-		const fullPath = path.join(dirPrim, file); //get its full path
-		const stats = fs.statSync(fullPath); //get properties (is it a file or another directory)
+		for (const file of files) { //for each file in directory
+			const fullPath = path.join(dirPrim, file); //get its full path
+			const stats = fs.statSync(fullPath); //get properties (is it a file or another directory)
 
-		if (stats.isDirectory()) { //if its a directory
-			parseDirectory(fullPath); //recursive parse that folder
-		} else if (stats.isFile()) { //otherwise process singular file
-			processFile(fullPath);
+			if (stats.isDirectory()) { //if its a directory
+				parseDirectory(fullPath); //recursive parse that folder
+			} else if (stats.isFile()) { //otherwise process singular file
+				processFile(fullPath);
+			}
 		}
 	}
 }
@@ -138,43 +131,24 @@ function parseAllIncludedPaths(path:Array<String>){ //for each path in the paths
 
 connection.onRequest('custom/delete', async (params) => {
 	// handle custom request
-	console.log(params.external);
 	parser.removeFileParse(params.external);
-	console.log(parser.definitionTable);
 });
 
 documents.onDidOpen(e => {
 	parser.parseFile(e.document.uri);
 });
 
-
-// connection.onDidOpen( event => {
-// 	parser.parseFile(event.textDocument.uri);
-// });
-
-// The global settings, used when the `workspace/configuration` request is not supported by the client.
-// Please note that this is not the case when using this server with the client provided in this example
-// but could happen with other clients.
-
-connection.onDidChangeConfiguration(change => {
-	if (change !== null) {
-		if (change.settings !== undefined) {
-			pathsIncluded = Array<String>(
-				(change.settings.seLinuxHelper.pathInclusion || defaultSettings)
-			);
-			parseAllIncludedPaths(pathsIncluded);
-			//TO-DO: Update parser to match new settings
-			// maybe just reparse every doc
-		}
+connection.onDidChangeConfiguration(async change => {
+	if(change.settings !== null) {
+		pathsIncluded = Array<String>(
+			(change.settings.seLinuxHelper.pathInclusion || defaultSettings)
+		);
+		parseAllIncludedPaths(pathsIncluded);
 	}
-
 });
 
 connection.onDidChangeWatchedFiles(async _change => {
 	// Monitored files have change in VSCode
-
-	//TO_DO: Maybe connect to path settings for documents that are outside workspace
-	// not a priority
 	for (let i = 0; i < _change.changes.length; i++) {
 		const change = _change.changes[i];
 		switch (change.type) {
@@ -275,7 +249,6 @@ connection.onDefinition(({ textDocument, position }): Definition | undefined => 
 	const searchTerm = getWord(document, position);
 
 	if (needsDefinition(document.uri, searchTerm)) {
-
 		let locations = parser.getLocations(searchTerm);
 		return locations;
 	}

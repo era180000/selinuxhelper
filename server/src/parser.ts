@@ -43,7 +43,7 @@ export class FileParser {
         }
 
         const filePath = URI.parse(uri).fsPath;
-        //console.log(filePath);
+
         const fileContent = fs.readFileSync(filePath, 'utf-8');
         
         const document = TextDocument.create(filePath, 'plaintext', 1, fileContent);
@@ -150,9 +150,7 @@ export class FileParser {
         }
     }
 
-    //TO-DO: There is something wrong with this function idk
     removeFileParse(uri: string){
-        //const path = URI.parse(uri).fsPath;
         //remove document from list
         delete this.documentList[this.documentList.indexOf(uri)];
 
@@ -162,8 +160,6 @@ export class FileParser {
             if (Array.isArray(value)){ //if the value is a list
                 for (let element of value){ //iterate through list and remove any matches
                     if (element.uri === uri){
-                        console.log(element.uri);
-                        console.log(uri);
                         //remove element from list
                         //this will remove the element and not set the index to undefined
                         const index = value.indexOf(element);
