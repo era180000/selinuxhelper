@@ -48,8 +48,7 @@ export function activate(context: ExtensionContext) {
 				workspace.createFileSystemWatcher('**/*.fc'),
 				workspace.createFileSystemWatcher('**/*.spt'),
 				workspace.createFileSystemWatcher('**/*.if'),
-		]
-				
+		]		
 			
 		},
 		initializationOptions: {

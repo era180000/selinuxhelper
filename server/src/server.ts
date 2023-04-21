@@ -9,8 +9,6 @@ import {
 	TextDocuments,
 	ProposedFeatures,
 	InitializeParams,
-	DidSaveTextDocumentParams,
-	DidSaveTextDocumentNotification,
 	DidChangeConfigurationNotification,
 	CompletionItem,
 	Definition,
@@ -18,11 +16,8 @@ import {
 	TextDocumentPositionParams,
 	TextDocumentSyncKind,
 	InitializeResult,
-	Position,
-	DidOpenTextDocumentParams,
+	Position
 } from 'vscode-languageserver/node';
-
-import { URI } from "vscode-uri";
 
 import { teCompletionItems } from './completionItems/te';
 import { fcCompletionItems } from './completionItems/fc';
@@ -74,13 +69,7 @@ connection.onInitialize( async (params: InitializeParams) => {
 
 	const result: InitializeResult = {
 		capabilities: {
-			textDocumentSync: {
-				openClose: true,
-				change: TextDocumentSyncKind.Incremental,
-				save: {
-				  includeText: true,
-				},
-			  },
+			textDocumentSync: TextDocumentSyncKind.Incremental,
 			// Tell the client that this server supports code completion.
 			completionProvider: {
 				resolveProvider: true,
@@ -117,11 +106,12 @@ connection.onInitialized(() => {
 	}
 });
 
+documents.onDidOpen( e =>
+	{
+		parser.parseFile(e.document.uri);
+	});
 
-connection.onDidOpenTextDocument((params: DidOpenTextDocumentParams) =>{
-	console.log("test1");
-	connection.console.log("test2");
-});
+
 // connection.onDidOpen( event => {
 // 	parser.parseFile(event.textDocument.uri);
 // });
@@ -143,8 +133,6 @@ connection.onDidChangeConfiguration(change => {
 	}
 
 });
-
-
 
 connection.onDidChangeWatchedFiles(async _change => {
 	// Monitored files have change in VSCode
