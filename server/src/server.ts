@@ -9,6 +9,8 @@ import {
 	TextDocuments,
 	ProposedFeatures,
 	InitializeParams,
+	DidSaveTextDocumentParams,
+	DidSaveTextDocumentNotification,
 	DidChangeConfigurationNotification,
 	CompletionItem,
 	Definition,
@@ -17,6 +19,7 @@ import {
 	TextDocumentSyncKind,
 	InitializeResult,
 	Position,
+	DidOpenTextDocumentParams,
 } from 'vscode-languageserver/node';
 
 import { URI } from "vscode-uri";
@@ -71,7 +74,13 @@ connection.onInitialize( async (params: InitializeParams) => {
 
 	const result: InitializeResult = {
 		capabilities: {
-			textDocumentSync: TextDocumentSyncKind.Incremental,
+			textDocumentSync: {
+				openClose: true,
+				change: TextDocumentSyncKind.Incremental,
+				save: {
+				  includeText: true,
+				},
+			  },
 			// Tell the client that this server supports code completion.
 			completionProvider: {
 				resolveProvider: true,
@@ -109,14 +118,13 @@ connection.onInitialized(() => {
 });
 
 
-connection.onDidSaveTextDocument(event => {
-	console.log("HERE");
-	parser.parseFile(event.textDocument.uri);
+connection.onDidOpenTextDocument((params: DidOpenTextDocumentParams) =>{
+	console.log("test1");
+	connection.console.log("test2");
 });
-
-connection.onDidOpenTextDocument( event => {
-	parser.parseFile(event.textDocument.uri);
-});
+// connection.onDidOpen( event => {
+// 	parser.parseFile(event.textDocument.uri);
+// });
 
 // The global settings, used when the `workspace/configuration` request is not supported by the client.
 // Please note that this is not the case when using this server with the client provided in this example
