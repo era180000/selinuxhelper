@@ -86,11 +86,11 @@ connection.onInitialize(async (params: InitializeParams) => {
 
 connection.onInitialized(async () => {
 
-	parseAllIncludedPaths(pathsIncluded, 'a');
+	parseAllIncludedPaths(pathsIncluded, 'add');
 	let workspace = await connection.workspace.getWorkspaceFolders();
 	if(workspace !== null){
 		workspace.forEach(element => {
-			parseDirectory(URI.parse(element.uri).fsPath, 'a');
+			parseDirectory(URI.parse(element.uri).fsPath, 'add');
 		});
 	}
 
@@ -101,10 +101,10 @@ connection.onInitialized(async () => {
 });
 
 function processFile(filePath: string, mode: string): void { //process file	
-	if(mode === 'a'){
+	if(mode === 'add'){
 		parser.parseFile(URI.file(filePath).toString());
 	}
-	else if(mode === 'r'){
+	else if(mode === 'remove'){
 		parser.removeFileParse(URI.file(filePath).toString());
 	}
 }
@@ -148,11 +148,11 @@ documents.onDidOpen(e => {
 connection.onDidChangeConfiguration(async change => {
 	if(change.settings !== null) {
 		
-		parseAllIncludedPaths(pathsIncluded, 'r');
+		parseAllIncludedPaths(pathsIncluded, 'remove');
 
 		pathsIncluded = change.settings.seLinuxHelper.pathInclusion || defaultSettings;
 		
-		parseAllIncludedPaths(pathsIncluded, 'a');
+		parseAllIncludedPaths(pathsIncluded, 'add');
 	}
 });
 
