@@ -48,12 +48,12 @@ export class FileParser {
         
         const document = TextDocument.create(filePath, 'plaintext', 1, fileContent);
 
-        this.documentList.push(filePath);
+        this.documentList.push(uri);
 
         switch (path.extname(filePath)){
             case ".te": this.parseTE(document);	break;
             case ".if": this.parseIF(document, uri); break;
-            case ".spt": this.parseSPT(document); break;
+            case ".spt": this.parseSPT(document, uri); break;
         }
     }
 
@@ -106,10 +106,10 @@ export class FileParser {
                 }
             }
         }
-
+        
     }
     
-    private parseSPT(document: TextDocument){
+    private parseSPT(document: TextDocument, uri: string){
         const text = document.getText();
         const lines = text.split(/\r?\n/);
         for(let i = 0; i < lines.length; i++)
@@ -139,7 +139,7 @@ export class FileParser {
                         i++;
                     }while(parenthesisStack.length !== 0);
                     
-                    this.addLocation(match[0], Location.create(document.uri, {
+                    this.addLocation(match[0], Location.create(uri, {
                         start: { line: startLine, character: 0 },
                         end: { line: i-1, character: lines[i-1].length }
                         })
@@ -152,7 +152,7 @@ export class FileParser {
 
     //TO-DO: There is something wrong with this function idk
     removeFileParse(uri: string){
-
+        //const path = URI.parse(uri).fsPath;
         //remove document from list
         delete this.documentList[this.documentList.indexOf(uri)];
 
@@ -162,6 +162,8 @@ export class FileParser {
             if (Array.isArray(value)){ //if the value is a list
                 for (let element of value){ //iterate through list and remove any matches
                     if (element.uri === uri){
+                        console.log(element.uri);
+                        console.log(uri);
                         //remove element from list
                         //this will remove the element and not set the index to undefined
                         const index = value.indexOf(element);

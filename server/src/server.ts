@@ -94,7 +94,7 @@ connection.onInitialized(() => {
 	//put all those through parser
 	//anything that not in current workspace add to watched files
 	parseAllIncludedPaths(pathsIncluded);
-
+	//console.log(parser.definitionTable);
 	if (hasConfigurationCapability) {
 		// Register for all configuration changes.
 		connection.client.register(DidChangeConfigurationNotification.type, undefined);
@@ -110,7 +110,7 @@ function processFile(filePath: string): void { //process file
 	//console.log(`Processing file: ${filePath}`);
 	// const decodedPath = decodeURIComponent(filePath);
 	
-	parser.parseFile(filePath);
+	parser.parseFile(URI.file(filePath).toString());
 }
 
 function parseDirectory(directoryPath: String): void { //parse entire directory
@@ -133,7 +133,7 @@ function parseAllIncludedPaths(path:Array<String>){ //for each path in the paths
 	path.forEach(element => {
 		parseDirectory(element); //parse that entire directory
 	});
-	console.log(parser.definitionTable);
+	
 }
 
 connection.onRequest('custom/delete', async (params) => {
@@ -162,7 +162,7 @@ connection.onDidChangeConfiguration(change => {
 			pathsIncluded = Array<String>(
 				(change.settings.seLinuxHelper.pathInclusion || defaultSettings)
 			);
-
+			parseAllIncludedPaths(pathsIncluded);
 			//TO-DO: Update parser to match new settings
 			// maybe just reparse every doc
 		}
