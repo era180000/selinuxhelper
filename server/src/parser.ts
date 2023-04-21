@@ -43,15 +43,16 @@ export class FileParser {
         }
 
         const filePath = URI.parse(uri).fsPath;
+        //console.log(filePath);
         const fileContent = fs.readFileSync(filePath, 'utf-8');
         
-        const document = TextDocument.create(uri, 'plaintext', 1, fileContent);
+        const document = TextDocument.create(filePath, 'plaintext', 1, fileContent);
 
-        this.documentList.push(uri);
+        this.documentList.push(filePath);
 
         switch (path.extname(filePath)){
             case ".te": this.parseTE(document);	break;
-            case ".if": this.parseIF(document); break;
+            case ".if": this.parseIF(document, uri); break;
             case ".spt": this.parseSPT(document); break;
         }
     }
@@ -61,9 +62,10 @@ export class FileParser {
         console.log("PARSING TE");
     }
 
-    private parseIF(document: TextDocument){
+    private parseIF(document: TextDocument, uri: string){
         const text = document.getText();
         const lines = text.split(/\r?\n/);
+
         if(lines !== undefined){
             for(let i = 0; i < lines.length; i++)
             {
@@ -94,7 +96,7 @@ export class FileParser {
 
                         }while(parenthesisStack.length !== 0 && i < lines.length);
                         
-                        this.addLocation(match[0], Location.create(document.uri, {
+                        this.addLocation(match[0], Location.create(uri, {
                             start: { line: startLine, character: 0 },
                             end: { line: i-1, character: lines[i-1].length }
                             })
@@ -105,7 +107,6 @@ export class FileParser {
             }
         }
 
-        console.log(this.definitionTable);
     }
     
     private parseSPT(document: TextDocument){

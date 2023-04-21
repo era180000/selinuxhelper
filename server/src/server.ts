@@ -19,9 +19,7 @@ import {
 	Position,
 	BulkRegistration
 } from 'vscode-languageserver/node';
-
-
-import * as vscode from 'vscode';
+import { URI } from "vscode-uri";
 import { teCompletionItems } from './completionItems/te';
 import { fcCompletionItems } from './completionItems/fc';
 import { ifCompletionItems } from './completionItems/if';
@@ -33,7 +31,7 @@ import {
 
 import * as path from 'path';
 import { parentPort } from 'worker_threads';
-
+import * as fs from 'fs';
 
 const parser = new FileParser();
 
@@ -44,7 +42,7 @@ const connection = createConnection(ProposedFeatures.all);
 //global settings
 let pathsIncluded: Array<String>;
 
-const defaultSettings:  Array<String> =  ["/usr/share/selinux/devel/include/"];
+const defaultSettings: Array<String> = ["/usr/share/selinux/devel/include/"];
 
 // Create a simple text document manager.
 const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
@@ -52,7 +50,7 @@ const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
 
-connection.onInitialize( async (params: InitializeParams) => {
+connection.onInitialize(async (params: InitializeParams) => {
 	const capabilities = params.capabilities;
 
 
@@ -95,6 +93,8 @@ connection.onInitialized(() => {
 
 	//put all those through parser
 	//anything that not in current workspace add to watched files
+	parseAllIncludedPaths(pathsIncluded);
+
 	if (hasConfigurationCapability) {
 		// Register for all configuration changes.
 		connection.client.register(DidChangeConfigurationNotification.type, undefined);
@@ -106,17 +106,46 @@ connection.onInitialized(() => {
 	}
 });
 
+function processFile(filePath: string): void { //process file
+	//console.log(`Processing file: ${filePath}`);
+	// const decodedPath = decodeURIComponent(filePath);
+	
+	parser.parseFile(filePath);
+}
+
+function parseDirectory(directoryPath: String): void { //parse entire directory
+	const dirPrim = directoryPath.toString(); //convert path to string primitive
+	const files = fs.readdirSync(dirPrim); //read contents of directory
+
+	for (const file of files) { //for each file in directory
+		const fullPath = path.join(dirPrim, file); //get its full path
+		const stats = fs.statSync(fullPath); //get properties (is it a file or another directory)
+
+		if (stats.isDirectory()) { //if its a directory
+			parseDirectory(fullPath); //recursive parse that folder
+		} else if (stats.isFile()) { //otherwise process singular file
+			processFile(fullPath);
+		}
+	}
+}
+
+function parseAllIncludedPaths(path:Array<String>){ //for each path in the pathsIncluded initial param
+	path.forEach(element => {
+		parseDirectory(element); //parse that entire directory
+	});
+	console.log(parser.definitionTable);
+}
+
 connection.onRequest('custom/delete', async (params) => {
-  // handle custom request
-  console.log(params.external);
-  parser.removeFileParse(params.external);
-  console.log(parser.definitionTable);
+	// handle custom request
+	console.log(params.external);
+	parser.removeFileParse(params.external);
+	console.log(parser.definitionTable);
 });
 
-documents.onDidOpen( e =>
-	{
-		parser.parseFile(e.document.uri);
-	});
+documents.onDidOpen(e => {
+	parser.parseFile(e.document.uri);
+});
 
 
 // connection.onDidOpen( event => {
@@ -128,12 +157,12 @@ documents.onDidOpen( e =>
 // but could happen with other clients.
 
 connection.onDidChangeConfiguration(change => {
-	if(change !== null) {
-		if(change.settings !== undefined){
+	if (change !== null) {
+		if (change.settings !== undefined) {
 			pathsIncluded = Array<String>(
 				(change.settings.seLinuxHelper.pathInclusion || defaultSettings)
-			);	
-	
+			);
+
 			//TO-DO: Update parser to match new settings
 			// maybe just reparse every doc
 		}
@@ -149,20 +178,20 @@ connection.onDidChangeWatchedFiles(async _change => {
 	for (let i = 0; i < _change.changes.length; i++) {
 		const change = _change.changes[i];
 		switch (change.type) {
-		  case FileChangeType.Created:
-			parser.parseFile(change.uri);
-			break;
-		  case FileChangeType.Deleted:
-			parser.removeFileParse(change.uri);
-			break;
-		  case FileChangeType.Changed:
-			parser.parseFile(change.uri);
-			break;
-		  default:
-			// do nothing
-			break;
+			case FileChangeType.Created:
+				parser.parseFile(change.uri);
+				break;
+			case FileChangeType.Deleted:
+				parser.removeFileParse(change.uri);
+				break;
+			case FileChangeType.Changed:
+				parser.parseFile(change.uri);
+				break;
+			default:
+				// do nothing
+				break;
 		}
-	  }
+	}
 });
 
 
@@ -172,28 +201,27 @@ connection.onDidChangeWatchedFiles(async _change => {
 *	OUTPUTS: String representing the hovered word seperated from any adjoining punctuation 
 *				or separator markings 
 */
-function getWord(document: TextDocument, position: Position)
-{
+function getWord(document: TextDocument, position: Position) {
 	const start = {
 		line: position.line,
 		character: 0,
 	};
 	const end = {
-	line: position.line + 1,
-	character: 0,
+		line: position.line + 1,
+		character: 0,
 	};
 
-    const line = document.getText({ start, end });
+	const line = document.getText({ start, end });
 	//check if line is a comment, if so return empty word
-	if(line.charAt(0) === '#'){
+	if (line.charAt(0) === '#') {
 		return "";
 	}
 
 	const text = line.replace(/[^\w\\$\\-]/g, " ");
-    const index = document.offsetAt(position) - document.offsetAt(start);
+	const index = document.offsetAt(position) - document.offsetAt(start);
 	const first = text.lastIndexOf(' ', index);
 	const last = text.indexOf(' ', index);
-	const word = text.substring(first !== -1 ? first+1 : 0, last !== -1 ? last : text.length - 1);
+	const word = text.substring(first !== -1 ? first + 1 : 0, last !== -1 ? last : text.length - 1);
 	return word;
 }
 
@@ -206,9 +234,9 @@ function getWord(document: TextDocument, position: Position)
 *				True: likely to have a definition
 *				False: keyword, whitespace, or other invalid search teram
 */
-function needsDefinition(uri: string, searchTerm: string){
+function needsDefinition(uri: string, searchTerm: string) {
 
-	if( searchTerm === ' ' || searchTerm === ''){
+	if (searchTerm === ' ' || searchTerm === '') {
 		return false;
 	}
 
@@ -216,17 +244,17 @@ function needsDefinition(uri: string, searchTerm: string){
 	const fileExtension = path.extname(uri);
 
 	let searchList = null;
-	switch (fileExtension){
-		case ".te": searchList = teCompletionItems;	break;
-		case ".if": searchList =  ifCompletionItems; break;
-		case ".spt": searchList =  sptCompletionItems; break;
+	switch (fileExtension) {
+		case ".te": searchList = teCompletionItems; break;
+		case ".if": searchList = ifCompletionItems; break;
+		case ".spt": searchList = sptCompletionItems; break;
 		case ".fc": searchList = fcCompletionItems; break;
 	}
 
-	if (searchList !== null){
+	if (searchList !== null) {
 		//identify if search term is a known keyword
 		for (const index in searchList) {
-			if(searchList[index].label === searchTerm){
+			if (searchList[index].label === searchTerm) {
 				return false;
 			}
 		}
@@ -239,14 +267,14 @@ function needsDefinition(uri: string, searchTerm: string){
 }
 
 //This handler provides the definition location on hover over a word
-connection.onDefinition(( {textDocument, position }): Definition | undefined => {
+connection.onDefinition(({ textDocument, position }): Definition | undefined => {
 	const document = documents.get(textDocument.uri);
-	if(document === undefined){
-		  return undefined;
+	if (document === undefined) {
+		return undefined;
 	}
 	const searchTerm = getWord(document, position);
 
-	if( needsDefinition(document.uri, searchTerm)){
+	if (needsDefinition(document.uri, searchTerm)) {
 
 		let locations = parser.getLocations(searchTerm);
 		return locations;
@@ -264,13 +292,13 @@ connection.onCompletion(
 		const uri = _textDocumentPosition.textDocument.uri;
 
 		const fileExtension = path.extname(uri);
-		switch (fileExtension){
+		switch (fileExtension) {
 			case ".te": return teCompletionItems;
 			case ".if": return ifCompletionItems;
 			case ".spt": return sptCompletionItems;
 			case ".fc": return fcCompletionItems;
 		}
-		
+
 		//not my circus not my monkeys
 		return [];
 	}
