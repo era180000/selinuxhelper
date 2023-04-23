@@ -93,7 +93,7 @@ connection.onInitialized(async () => {
 			parseDirectory(URI.parse(element.uri).fsPath, 'add');
 		});
 	}
-
+	console.log(parser.definitionTable);
 	if (hasConfigurationCapability) {
 		// Register for all configuration changes.
 		connection.client.register(DidChangeConfigurationNotification.type, undefined);
