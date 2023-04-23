@@ -17,7 +17,8 @@ import {
 	TextDocumentSyncKind,
 	InitializeResult,
 	Position,
-	BulkRegistration
+	BulkRegistration,
+	CompletionItemKind
 } from 'vscode-languageserver/node';
 import { URI } from "vscode-uri";
 import { teCompletionItems } from './completionItems/te';
@@ -40,6 +41,11 @@ const connection = createConnection(ProposedFeatures.all);
 
 //global settings
 let pathsIncluded: Array<String>;
+
+//completion item arrays to use (default plus parsed items)
+let combinedTECompletionItems: CompletionItem[];
+let combinedIFCompletionItems: CompletionItem[];
+let combinedSPTCompletionItems: CompletionItem[];
 
 const defaultSettings: Array<String> = ["/usr/share/selinux/devel/include/"];
 
@@ -93,7 +99,9 @@ connection.onInitialized(async () => {
 			parseDirectory(URI.parse(element.uri).fsPath, 'add');
 		});
 	}
-	console.log(parser.definitionTable);
+	//after parsing all files, update completion item list with parsed entries
+	updateCompletionItemLists(); 
+	//console.log(parser.definitionTable);
 	if (hasConfigurationCapability) {
 		// Register for all configuration changes.
 		connection.client.register(DidChangeConfigurationNotification.type, undefined);
@@ -175,12 +183,100 @@ connection.onDidChangeWatchedFiles(async _change => {
 				break;
 		}
 	}
+	//update completion item list
+	updateCompletionItemLists();
 });
 
+function updateCompletionItemLists(){
+	let parsedTEItems: CompletionItem[] = [];
+	let parsedIFItems: CompletionItem[] = [];
+	let parsedSPTItems: CompletionItem[] = [];
+	//for each element in parser map
+	for(const [key, value] of parser.definitionTable.entries()){
+		let uri:string;
+		if (Array.isArray(value.defLocation)){
+			uri = value.defLocation[0].uri;
+		}
+		else{
+			uri = value.defLocation.uri;
+		}
+		// Create a URL object from the URI string
+		const url = new URL(uri);
+		// Get the file path from the URL object
+		const filePath = url.pathname;
+		// Get the file name from the file path
+		const fileName = path.basename(filePath);
+
+		switch (value.type){
+			case "type": //needed in IF and SPT
+				//add to if and spt
+				const typeItem: CompletionItem = {
+					label: key,
+        			kind: CompletionItemKind.Variable,
+					detail: fileName
+				};
+				parsedIFItems.push(typeItem);
+				parsedSPTItems.push(typeItem);
+				break; 
+			case "bool": //needed in IF and SPT
+				//add to if and spt
+				const boolItem: CompletionItem = {
+					label: key,
+					kind: CompletionItemKind.Variable,
+					detail: fileName
+				};
+				parsedIFItems.push(boolItem);
+				parsedSPTItems.push(boolItem);
+				break; 
+			case "interface":  //needed in IF and TE
+				//add to if and te
+				const interfaceItem: CompletionItem = {
+					label: key,
+					kind: CompletionItemKind.Interface,
+					detail: fileName,
+					insertText: `${key}($1)`,
+        			insertTextFormat: 2
+				};
+				parsedIFItems.push(interfaceItem);
+				parsedTEItems.push(interfaceItem);
+				break; 
+			case "template": //needed in IF and TE
+				//add to if and te
+				const templateItem: CompletionItem = {
+					label: key,
+					kind: CompletionItemKind.Struct,
+					detail: fileName,
+					insertText: `${key}($1)`,
+        			insertTextFormat: 2
+				};
+				parsedIFItems.push(templateItem);
+				parsedTEItems.push(templateItem);
+				break; 
+			case "define": //needed in spt if and te
+				//add to if, te, and spt
+				const defineItem: CompletionItem = {
+					label: key,
+					kind: CompletionItemKind.Method,
+					detail: fileName,
+					insertText: `${key}($1)`,
+        			insertTextFormat: 2
+				};
+				parsedIFItems.push(defineItem);
+				parsedTEItems.push(defineItem);
+				parsedSPTItems.push(defineItem);
+				break; 
+		}
+	}
+	//redefine existing completion item arrays
+	// ...[arrayname] is a way to combine arrays (called the spread operator)
+	combinedIFCompletionItems = [...parsedIFItems, ...ifCompletionItems];
+	combinedSPTCompletionItems = [...parsedSPTItems, ...sptCompletionItems];
+	combinedTECompletionItems = [...parsedTEItems, ...teCompletionItems];
+}
 
 /*	This function identifies the hovered word and seperates it from any surrounding text
-*	INPUTS: document: TextDocument of hovered word
-			position: Position of hovered word in Text Document
+*	INPUTS: document: TextDocument of hovered word 
+*		position: Position of hovered word in Text Document
 *	OUTPUTS: String representing the hovered word seperated from any adjoining punctuation 
 *				or separator markings 
 */
@@ -228,6 +324,8 @@ function needsDefinition(uri: string, searchTerm: string) {
 
 	let searchList = null;
 	switch (fileExtension) {
+		//keep these to default completion item arrays
+		//do not use combined arrays
 		case ".te": searchList = teCompletionItems; break;
 		case ".if": searchList = ifCompletionItems; break;
 		case ".spt": searchList = sptCompletionItems; break;
@@ -275,10 +373,11 @@ connection.onCompletion(
 
 		const fileExtension = path.extname(uri);
 		switch (fileExtension) {
-			case ".te": return teCompletionItems;
-			case ".if": return ifCompletionItems;
-			case ".spt": return sptCompletionItems;
-			case ".fc": return fcCompletionItems;
+			//use combined completion item array here
+			case ".te": return combinedTECompletionItems;
+			case ".if": return combinedIFCompletionItems;
+			case ".spt": return combinedSPTCompletionItems;
+			case ".fc": return fcCompletionItems; //fc wont be added to, and so is kept default
 		}
 
 		//not my circus not my monkeys
