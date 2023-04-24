@@ -72,12 +72,5 @@ export const ifCompletionItems: CompletionItem[] = [
         insertText: 'template(`$1\', `$2\')',
         insertTextFormat: 2,
         data: 8
-    },
-    {
-        label: 'optional_policy',
-        kind: CompletionItemKind.Function,
-        insertText: 'optional_policy(`$1\')',
-        insertTextFormat: 2,
-        data: 9
     }
 ]
