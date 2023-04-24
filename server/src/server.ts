@@ -17,8 +17,7 @@ import {
 	TextDocumentSyncKind,
 	InitializeResult,
 	Position,
-	BulkRegistration,
-	CompletionItemKind
+	CompletionItemKind,
 } from 'vscode-languageserver/node';
 import { URI } from "vscode-uri";
 import { teCompletionItems } from './completionItems/te';
@@ -128,28 +127,33 @@ function processFile(filePath: string, mode: string): void { //process file
 function parseDirectory(directoryPath: String, mode: string): void { //parse entire directory
 	const dirPrim = directoryPath.toString(); //convert path to string primitive
 	console.log("Traversing " + dirPrim);
-	if(fs.existsSync(dirPrim)) {
-		const files = fs.readdirSync(dirPrim); //read contents of directory
-
-		for (const file of files) { //for each file in directory
-			const fullPath = path.join(dirPrim, file); //get its full path
-			if (fs.existsSync(fullPath)) {
-				const stats = fs.statSync(fullPath); //get properties (is it a file or another directory)
-
-				if (stats.isDirectory()) { //if its a directory
-					parseDirectory(fullPath, mode); //recursive parse that folder
-				} else if (stats.isFile()) { //otherwise process singular file
-					const fileExtension = path.extname(fullPath);
-					switch (fileExtension) {
-						//process file
-						case ".te": 
-						case ".if": 
-						case ".spt": processFile(fullPath, mode); break;
+		
+	try {
+		if(fs.existsSync(dirPrim)) {
+			const files = fs.readdirSync(dirPrim); //read contents of directory
+	
+			for (const file of files) { //for each file in directory
+				const fullPath = path.join(dirPrim, file); //get its full path
+				if (fs.existsSync(fullPath)) {
+					const stats = fs.statSync(fullPath); //get properties (is it a file or another directory)
+	
+					if (stats.isDirectory()) { //if its a directory
+						parseDirectory(fullPath, mode); //recursive parse that folder
+					} else if (stats.isFile()) { //otherwise process singular file
+						const fileExtension = path.extname(fullPath);
+						switch (fileExtension) {
+							//process file
+							case ".te": 
+							case ".if": 
+							case ".spt": processFile(fullPath, mode); break;
+						}
+	
 					}
-
 				}
 			}
 		}
+	} catch (error) {
+		console.log("Error Parsing: " + dirPrim);
 	}
 }
 
@@ -167,6 +171,7 @@ connection.onRequest('custom/delete', async (params) => {
 	console.log("Recieved deletion of file " + params.external);
 	parser.removeFileParse(params.external);
 });
+
 
 documents.onDidOpen(e => {
 	parser.parseFile(e.document.uri);
@@ -320,10 +325,11 @@ function getWord(document: TextDocument, position: Position) {
 	}
 
 	const text = line.replace(/[^\w\\$\\-]/g, " ");
+
 	const index = document.offsetAt(position) - document.offsetAt(start);
 	const first = text.lastIndexOf(' ', index);
 	const last = text.indexOf(' ', index);
-	const word = text.substring(first !== -1 ? first + 1 : 0, last !== -1 ? last : text.length - 1);
+	const word = text.substring(first !== -1 ? first + 1 : 0, last !== -1 ? last : text.length);
 	return word;
 }
 
@@ -375,11 +381,13 @@ connection.onDefinition(({ textDocument, position }): Definition | undefined => 
 		return undefined;
 	}
 	const searchTerm = getWord(document, position);
-
-	console.log("Searching for hover on " + searchTerm);
+	console.log("Searching for deinition on " + searchTerm);
 	if (needsDefinition(document.uri, searchTerm)) {
-		console.log("Hover for " + searchTerm + " found");
+
 		let locations = parser.getLocations(searchTerm);
+		if(locations !== undefined){
+			console.log("Deinition for " + searchTerm + " found");
+		}
 		return locations;
 	}
 

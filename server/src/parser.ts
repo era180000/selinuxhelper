@@ -44,6 +44,7 @@ export class FileParser {
         }
 
         const filePath = URI.parse(uri).fsPath;
+        try {
         if(fs.existsSync(filePath)) {
             this.documentList.push(uri);
 
@@ -63,6 +64,11 @@ export class FileParser {
             else{
                 console.log(filePath + " is too large of a file, cannot be parsed");
             }
+        }
+
+        }
+        catch(err){
+            console.log("Error in parsing " + filePath);
         }
     }
 
