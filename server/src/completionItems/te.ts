@@ -413,13 +413,6 @@ export const teCompletionItems: CompletionItem[] = [
         data: 1
     },
     {
-        label: 'optional_policy',
-        kind: CompletionItemKind.Function,
-        insertText: 'optional_policy(`$0\')',
-        insertTextFormat: 2,
-        data: 2
-    },
-    {
         label: 'ifdef',
         kind: CompletionItemKind.Function,
         insertText: 'ifdef(`$0\', `$1\')',
