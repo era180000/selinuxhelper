@@ -101,7 +101,6 @@ connection.onInitialized(async () => {
 	}
 	//after parsing all files, update completion item list with parsed entries
 	updateCompletionItemLists(); 
-	//console.log(parser.definitionTable);
 	if (hasConfigurationCapability) {
 		// Register for all configuration changes.
 		connection.client.register(DidChangeConfigurationNotification.type, undefined);
@@ -110,6 +109,7 @@ connection.onInitialized(async () => {
 
 function processFile(filePath: string, mode: string): void { //process file	
 	if(mode === 'add'){
+		//check if end of file is correct extension
 		parser.parseFile(URI.file(filePath).toString());
 	}
 	else if(mode === 'remove'){
@@ -124,12 +124,23 @@ function parseDirectory(directoryPath: String, mode: string): void { //parse ent
 
 		for (const file of files) { //for each file in directory
 			const fullPath = path.join(dirPrim, file); //get its full path
-			const stats = fs.statSync(fullPath); //get properties (is it a file or another directory)
+			if (fs.existsSync(fullPath)) {
+				const stats = fs.statSync(fullPath); //get properties (is it a file or another directory)
 
-			if (stats.isDirectory()) { //if its a directory
-				parseDirectory(fullPath, mode); //recursive parse that folder
-			} else if (stats.isFile()) { //otherwise process singular file
-				processFile(fullPath, mode);
+				if (stats.isDirectory()) { //if its a directory
+					parseDirectory(fullPath, mode); //recursive parse that folder
+				} else if (stats.isFile()) { //otherwise process singular file
+					const fileExtension = path.extname(fullPath);
+					console.log(fullPath);
+					switch (fileExtension) {
+						//process file
+						case ".te": 
+						case ".if": 
+						case ".spt":
+						case ".fc": processFile(fullPath, mode); break;
+					}
+
+				}
 			}
 		}
 	}
