@@ -58,7 +58,6 @@ let hasWorkspaceFolderCapability = false;
 connection.onInitialize(async (params: InitializeParams) => {
 	const capabilities = params.capabilities;
 
-
 	// Does the client support the `workspace/configuration` request?
 	// If not, we fall back using global settings.
 	hasConfigurationCapability = !!(
@@ -92,22 +91,31 @@ connection.onInitialize(async (params: InitializeParams) => {
 
 connection.onInitialized(async () => {
 
+	console.log("Parsing included paths: " + pathsIncluded);
 	parseAllIncludedPaths(pathsIncluded, 'add');
+
 	let workspace = await connection.workspace.getWorkspaceFolders();
 	if(workspace !== null){
+
+		console.log("Parsing workspace: " + workspace.toString());
 		workspace.forEach(element => {
 			parseDirectory(URI.parse(element.uri).fsPath, 'add');
 		});
 	}
 	//after parsing all files, update completion item list with parsed entries
 	updateCompletionItemLists(); 
-	//console.log(parser.definitionTable);
 	if (hasConfigurationCapability) {
 		// Register for all configuration changes.
 		connection.client.register(DidChangeConfigurationNotification.type, undefined);
 	}
 });
 
+/*	This function identifies the sends the file to the parser
+*	INPUTS: filePath: string with the file path to be parsed 
+*		mode: 'add' look through file and add parses to parser
+				'remove' remove any previously parsed items from this file from the parser
+*	OUTPUTS: None
+*/
 function processFile(filePath: string, mode: string): void { //process file	
 	if(mode === 'add'){
 		parser.parseFile(URI.file(filePath).toString());
@@ -119,17 +127,27 @@ function processFile(filePath: string, mode: string): void { //process file
 
 function parseDirectory(directoryPath: String, mode: string): void { //parse entire directory
 	const dirPrim = directoryPath.toString(); //convert path to string primitive
+	console.log("Traversing " + dirPrim);
 	if(fs.existsSync(dirPrim)) {
 		const files = fs.readdirSync(dirPrim); //read contents of directory
 
 		for (const file of files) { //for each file in directory
 			const fullPath = path.join(dirPrim, file); //get its full path
-			const stats = fs.statSync(fullPath); //get properties (is it a file or another directory)
+			if (fs.existsSync(fullPath)) {
+				const stats = fs.statSync(fullPath); //get properties (is it a file or another directory)
 
-			if (stats.isDirectory()) { //if its a directory
-				parseDirectory(fullPath, mode); //recursive parse that folder
-			} else if (stats.isFile()) { //otherwise process singular file
-				processFile(fullPath, mode);
+				if (stats.isDirectory()) { //if its a directory
+					parseDirectory(fullPath, mode); //recursive parse that folder
+				} else if (stats.isFile()) { //otherwise process singular file
+					const fileExtension = path.extname(fullPath);
+					switch (fileExtension) {
+						//process file
+						case ".te": 
+						case ".if": 
+						case ".spt": processFile(fullPath, mode); break;
+					}
+
+				}
 			}
 		}
 	}
@@ -146,6 +164,7 @@ function parseAllIncludedPaths(path:Array<String>, mode: string){ //for each pat
 
 connection.onRequest('custom/delete', async (params) => {
 	// handle custom request
+	console.log("Recieved deletion of file " + params.external);
 	parser.removeFileParse(params.external);
 });
 
@@ -156,6 +175,8 @@ documents.onDidOpen(e => {
 connection.onDidChangeConfiguration(async change => {
 	if(change.settings !== null) {
 		
+		console.log("Settings Change Detected");
+
 		parseAllIncludedPaths(pathsIncluded, 'remove');
 
 		pathsIncluded = change.settings.seLinuxHelper.pathInclusion || defaultSettings;
@@ -188,6 +209,8 @@ connection.onDidChangeWatchedFiles(async _change => {
 });
 
 function updateCompletionItemLists(){
+	console.log("Updating Completion Items");
+
 	let parsedTEItems: CompletionItem[] = [];
 	let parsedIFItems: CompletionItem[] = [];
 	let parsedSPTItems: CompletionItem[] = [];
@@ -304,8 +327,6 @@ function getWord(document: TextDocument, position: Position) {
 	return word;
 }
 
-
-
 /*	This function identifies whether a term is not a keyword and needs a definition
 *	INPUTS: String search term 
 *			Uri of file location containing search term
@@ -355,7 +376,9 @@ connection.onDefinition(({ textDocument, position }): Definition | undefined => 
 	}
 	const searchTerm = getWord(document, position);
 
+	console.log("Searching for hover on " + searchTerm);
 	if (needsDefinition(document.uri, searchTerm)) {
+		console.log("Hover for " + searchTerm + " found");
 		let locations = parser.getLocations(searchTerm);
 		return locations;
 	}
