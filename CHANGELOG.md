@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+## [0.2.2]: 2023-04-21
+
+### [Added]
+
+    -Fixed file read error with proper handling. Will just skip unreadable files now
+    -Added f12 goto functionality. Known Issue: Goes to top of file instead of correct in-file location
+    -Changed hover to hover in place
+
 ## [0.2.1]: 2023-04-21
 
 ### [Added]

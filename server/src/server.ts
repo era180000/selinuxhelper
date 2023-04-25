@@ -370,7 +370,6 @@ function needsDefinition(uri: string, searchTerm: string) {
 	}
 	return true;
 }
-
 connection.onHover( ({textDocument, position}): Hover | undefined => {
 	const document = documents.get(textDocument.uri);
 	if (document === undefined) {
@@ -400,32 +399,68 @@ connection.onHover( ({textDocument, position}): Hover | undefined => {
 });
 
 
+function selectString(str1: string, str2: string): string{
+	// If both strings are undefined, return null
+	const emptyRegex = /^[a-zA-Z_]+$/;
+
+	if(!emptyRegex.test(str1) && !emptyRegex.test(str2)){
+		throw  new Error('Both strings are empty');
+	}
+	// If only one of the strings is defined, return the defined string
+	if (!emptyRegex.test(str1)) {
+	  return str2;
+	}
+	if (!emptyRegex.test(str2)) {
+	  return str1;
+	}
+	// If both strings are defined and they are the same, return either
+	if (str1 === str2) {
+	  return str1;
+	}
+	// If both strings are defined but they are different, throw an error
+	throw new Error(`Both strings are defined and different: str1='${str1}', str2='${str2}'`);
+}
+
 //This handler provides the definition location on hover over a word
 connection.onDefinition(({ textDocument, position }): Definition | undefined => {
 	const document = documents.get(textDocument.uri);
 	if (document === undefined) {
 		return undefined;
 	}
-	const searchTerm = getWord(document, position);
-	console.log("Searching for deinition on " + searchTerm);
-	if (needsDefinition(document.uri, searchTerm)) {
+	const { line, character } = position;
+	const mainTerm = getWord(document, position);
+	const altTerm = getWord(document, { line, character:character-1}); //alternate search term for end of word
 
-		let locations = parser.getLocations(searchTerm);
-		if(locations !== undefined){
-			console.log("Deinition for " + searchTerm + " found");
-		}
-		if(Array.isArray(locations))
-		{
-			let temp = [];
-			for(let i = 0; i < locations.length; i++){
-				temp.push(locations[i].location);
+	try{
+		const searchTerm = selectString(mainTerm, altTerm);
+		console.log("Searching for deinition on " + searchTerm);
+		if (needsDefinition(document.uri, searchTerm)) {
+			let locations = parser.getLocations(searchTerm);
+			if(locations !== undefined){
+				console.log("Deinition for " + searchTerm + " found");
 			}
-			return temp;
+			if(Array.isArray(locations))
+			{
+				let temp = [];
+				for(let i = 0; i < locations.length; i++){
+					temp.push(locations[i].location);
+				}
+				return temp;
+			}
+			else if(locations !== undefined){
+				return locations.location;
+			}
+	}
+	}catch(error){
+		if(error instanceof Error){
+			console.error(`Error: ${error.message}`);
 		}
-		else if(locations !== undefined){
-			return locations.location;
+		else{
+			console.error('An unexpected error occurred:', error);
 		}
 	}
+	
+	
 	return undefined;
 });
 
