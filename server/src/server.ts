@@ -17,8 +17,8 @@ import {
 	TextDocumentSyncKind,
 	InitializeResult,
 	Position,
-	BulkRegistration,
-	CompletionItemKind
+	Hover,
+	CompletionItemKind,
 } from 'vscode-languageserver/node';
 import { URI } from "vscode-uri";
 import { teCompletionItems } from './completionItems/te';
@@ -77,6 +77,7 @@ connection.onInitialize(async (params: InitializeParams) => {
 				resolveProvider: true,
 			},
 			definitionProvider: true,
+			hoverProvider: true,
 		}
 	};
 	if (hasWorkspaceFolderCapability) {
@@ -128,28 +129,33 @@ function processFile(filePath: string, mode: string): void { //process file
 function parseDirectory(directoryPath: String, mode: string): void { //parse entire directory
 	const dirPrim = directoryPath.toString(); //convert path to string primitive
 	console.log("Traversing " + dirPrim);
-	if(fs.existsSync(dirPrim)) {
-		const files = fs.readdirSync(dirPrim); //read contents of directory
-
-		for (const file of files) { //for each file in directory
-			const fullPath = path.join(dirPrim, file); //get its full path
-			if (fs.existsSync(fullPath)) {
-				const stats = fs.statSync(fullPath); //get properties (is it a file or another directory)
-
-				if (stats.isDirectory()) { //if its a directory
-					parseDirectory(fullPath, mode); //recursive parse that folder
-				} else if (stats.isFile()) { //otherwise process singular file
-					const fileExtension = path.extname(fullPath);
-					switch (fileExtension) {
-						//process file
-						case ".te": 
-						case ".if": 
-						case ".spt": processFile(fullPath, mode); break;
+		
+	try {
+		if(fs.existsSync(dirPrim)) {
+			const files = fs.readdirSync(dirPrim); //read contents of directory
+	
+			for (const file of files) { //for each file in directory
+				const fullPath = path.join(dirPrim, file); //get its full path
+				if (fs.existsSync(fullPath)) {
+					const stats = fs.statSync(fullPath); //get properties (is it a file or another directory)
+	
+					if (stats.isDirectory()) { //if its a directory
+						parseDirectory(fullPath, mode); //recursive parse that folder
+					} else if (stats.isFile()) { //otherwise process singular file
+						const fileExtension = path.extname(fullPath);
+						switch (fileExtension) {
+							//process file
+							case ".te": 
+							case ".if": 
+							case ".spt": processFile(fullPath, mode); break;
+						}
+	
 					}
-
 				}
 			}
 		}
+	} catch (error) {
+		console.log("Error Parsing: " + dirPrim);
 	}
 }
 
@@ -166,10 +172,6 @@ connection.onRequest('custom/delete', async (params) => {
 	// handle custom request
 	console.log("Recieved deletion of file " + params.external);
 	parser.removeFileParse(params.external);
-});
-
-documents.onDidOpen(e => {
-	parser.parseFile(e.document.uri);
 });
 
 connection.onDidChangeConfiguration(async change => {
@@ -218,10 +220,10 @@ function updateCompletionItemLists(){
 	for(const [key, value] of parser.definitionTable.entries()){
 		let uri:string;
 		if (Array.isArray(value.defLocation)){
-			uri = value.defLocation[0].uri;
+			uri = value.defLocation[0].location.uri;
 		}
 		else{
-			uri = value.defLocation.uri;
+			uri = value.defLocation.location.uri;
 		}
 		// Create a URL object from the URI string
 		const url = new URL(uri);
@@ -320,10 +322,11 @@ function getWord(document: TextDocument, position: Position) {
 	}
 
 	const text = line.replace(/[^\w\\$\\-]/g, " ");
+
 	const index = document.offsetAt(position) - document.offsetAt(start);
 	const first = text.lastIndexOf(' ', index);
 	const last = text.indexOf(' ', index);
-	const word = text.substring(first !== -1 ? first + 1 : 0, last !== -1 ? last : text.length - 1);
+	const word = text.substring(first !== -1 ? first + 1 : 0, last !== -1 ? last : text.length);
 	return word;
 }
 
@@ -368,6 +371,35 @@ function needsDefinition(uri: string, searchTerm: string) {
 	return true;
 }
 
+connection.onHover( ({textDocument, position}): Hover | undefined => {
+	const document = documents.get(textDocument.uri);
+	if (document === undefined) {
+		return undefined;
+	}
+	const searchTerm = getWord(document, position);
+	if(searchTerm.length === 0){
+		return undefined;
+	}
+	console.log("Searching for hover on " + searchTerm);
+	if (needsDefinition(document.uri, searchTerm)) {
+
+		let locations = parser.getLocations(searchTerm);
+		if(locations !== undefined){
+			console.log("Hover for " + searchTerm + " found");
+		}
+		if(Array.isArray(locations))
+		{
+
+			return { contents: locations[0].description};
+		}
+		else if(locations !== undefined){
+			return { contents: locations.description };
+		}
+	}
+	return undefined;
+});
+
+
 //This handler provides the definition location on hover over a word
 connection.onDefinition(({ textDocument, position }): Definition | undefined => {
 	const document = documents.get(textDocument.uri);
@@ -375,14 +407,25 @@ connection.onDefinition(({ textDocument, position }): Definition | undefined => 
 		return undefined;
 	}
 	const searchTerm = getWord(document, position);
-
-	console.log("Searching for hover on " + searchTerm);
+	console.log("Searching for deinition on " + searchTerm);
 	if (needsDefinition(document.uri, searchTerm)) {
-		console.log("Hover for " + searchTerm + " found");
-		let locations = parser.getLocations(searchTerm);
-		return locations;
-	}
 
+		let locations = parser.getLocations(searchTerm);
+		if(locations !== undefined){
+			console.log("Deinition for " + searchTerm + " found");
+		}
+		if(Array.isArray(locations))
+		{
+			let temp = [];
+			for(let i = 0; i < locations.length; i++){
+				temp.push(locations[i].location);
+			}
+			return temp;
+		}
+		else if(locations !== undefined){
+			return locations.location;
+		}
+	}
 	return undefined;
 });
 
