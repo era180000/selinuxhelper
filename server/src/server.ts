@@ -3,6 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
+import { FileParser } from './parser';
 import {
 	createConnection,
 	TextDocuments,
@@ -11,14 +12,15 @@ import {
 	DidChangeConfigurationNotification,
 	CompletionItem,
 	Definition,
-	Location,
+	FileChangeType,
 	TextDocumentPositionParams,
 	TextDocumentSyncKind,
 	InitializeResult,
 	Position,
-
+	Hover,
+	CompletionItemKind,
 } from 'vscode-languageserver/node';
-
+import { URI } from "vscode-uri";
 import { teCompletionItems } from './completionItems/te';
 import { fcCompletionItems } from './completionItems/fc';
 import { ifCompletionItems } from './completionItems/if';
@@ -29,6 +31,9 @@ import {
 } from 'vscode-languageserver-textdocument';
 
 import * as path from 'path';
+import * as fs from 'fs';
+
+const parser = new FileParser();
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -37,16 +42,20 @@ const connection = createConnection(ProposedFeatures.all);
 //global settings
 let pathsIncluded: Array<String>;
 
-const defaultSettings:  Array<String> =  ["/usr/share/selinux/devel/include/"];
+//completion item arrays to use (default plus parsed items)
+let combinedTECompletionItems: CompletionItem[];
+let combinedIFCompletionItems: CompletionItem[];
+let combinedSPTCompletionItems: CompletionItem[];
+
+const defaultSettings: Array<String> = ["/usr/share/selinux/devel/include/"];
 
 // Create a simple text document manager.
 const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 
 let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
-let hasDiagnosticRelatedInformationCapability = false;
 
-connection.onInitialize( async (params: InitializeParams) => {
+connection.onInitialize(async (params: InitializeParams) => {
 	const capabilities = params.capabilities;
 
 	// Does the client support the `workspace/configuration` request?
@@ -56,11 +65,6 @@ connection.onInitialize( async (params: InitializeParams) => {
 	);
 	hasWorkspaceFolderCapability = !!(
 		capabilities.workspace && !!capabilities.workspace.workspaceFolders
-	);
-	hasDiagnosticRelatedInformationCapability = !!(
-		capabilities.textDocument &&
-		capabilities.textDocument.publishDiagnostics &&
-		capabilities.textDocument.publishDiagnostics.relatedInformation
 	);
 
 	pathsIncluded = params.initializationOptions.pathInclusion;
@@ -72,7 +76,8 @@ connection.onInitialize( async (params: InitializeParams) => {
 			completionProvider: {
 				resolveProvider: true,
 			},
-			definitionProvider: true
+			definitionProvider: true,
+			hoverProvider: true,
 		}
 	};
 	if (hasWorkspaceFolderCapability) {
@@ -85,76 +90,245 @@ connection.onInitialize( async (params: InitializeParams) => {
 	return result;
 });
 
-connection.onInitialized(() => {
+connection.onInitialized(async () => {
+
+	console.log("Parsing included paths: " + pathsIncluded);
+	parseAllIncludedPaths(pathsIncluded, 'add');
+
+	let workspace = await connection.workspace.getWorkspaceFolders();
+	if(workspace !== null){
+
+		console.log("Parsing workspace: " + workspace.toString());
+		workspace.forEach(element => {
+			parseDirectory(URI.parse(element.uri).fsPath, 'add');
+		});
+	}
+	//after parsing all files, update completion item list with parsed entries
+	updateCompletionItemLists(); 
 	if (hasConfigurationCapability) {
 		// Register for all configuration changes.
 		connection.client.register(DidChangeConfigurationNotification.type, undefined);
 	}
-	if (hasWorkspaceFolderCapability) {
-		connection.workspace.onDidChangeWorkspaceFolders(_event => {
-			console.log('Workspace folder change event received.');
-		});
+});
+
+/*	This function identifies the sends the file to the parser
+*	INPUTS: filePath: string with the file path to be parsed 
+*		mode: 'add' look through file and add parses to parser
+				'remove' remove any previously parsed items from this file from the parser
+*	OUTPUTS: None
+*/
+function processFile(filePath: string, mode: string): void { //process file	
+	if(mode === 'add'){
+		parser.parseFile(URI.file(filePath).toString());
+	}
+	else if(mode === 'remove'){
+		parser.removeFileParse(URI.file(filePath).toString());
+	}
+}
+
+function parseDirectory(directoryPath: String, mode: string): void { //parse entire directory
+	const dirPrim = directoryPath.toString(); //convert path to string primitive
+	console.log("Traversing " + dirPrim);
+		
+	try {
+		if(fs.existsSync(dirPrim)) {
+			const files = fs.readdirSync(dirPrim); //read contents of directory
+	
+			for (const file of files) { //for each file in directory
+				const fullPath = path.join(dirPrim, file); //get its full path
+				if (fs.existsSync(fullPath)) {
+					const stats = fs.statSync(fullPath); //get properties (is it a file or another directory)
+	
+					if (stats.isDirectory()) { //if its a directory
+						parseDirectory(fullPath, mode); //recursive parse that folder
+					} else if (stats.isFile()) { //otherwise process singular file
+						const fileExtension = path.extname(fullPath);
+						switch (fileExtension) {
+							//process file
+							case ".te": 
+							case ".if": 
+							case ".spt": processFile(fullPath, mode); break;
+						}
+	
+					}
+				}
+			}
+		}
+	} catch (error) {
+		console.log("Error Parsing: " + dirPrim);
+	}
+}
+
+// 'a' is add to list
+// 'r' is remove from list
+function parseAllIncludedPaths(path:Array<String>, mode: string){ //for each path in the pathsIncluded initial param
+	path.forEach(element => {
+		parseDirectory(element, mode); //parse that entire directory
+	});
+	
+}
+
+connection.onRequest('custom/delete', async (params) => {
+	// handle custom request
+	console.log("Recieved deletion of file " + params.external);
+	parser.removeFileParse(params.external);
+});
+
+connection.onDidChangeConfiguration(async change => {
+	if(change.settings !== null) {
+		
+		console.log("Settings Change Detected");
+
+		parseAllIncludedPaths(pathsIncluded, 'remove');
+
+		pathsIncluded = change.settings.seLinuxHelper.pathInclusion || defaultSettings;
+		
+		parseAllIncludedPaths(pathsIncluded, 'add');
 	}
 });
 
-// The content of a text document has changed. This event is emitted
-// when the text document first opened or when its content has changed.
-documents.onDidChangeContent(change => {
-	//TO_DO: Update Parser
-});
-
-
-// The global settings, used when the `workspace/configuration` request is not supported by the client.
-// Please note that this is not the case when using this server with the client provided in this example
-// but could happen with other clients.
-
-connection.onDidChangeConfiguration(change => {
-	if(change.settings !== undefined){
-		pathsIncluded = Array<String>(
-			(change.settings.seLinuxHelper.pathInclusion || defaultSettings)
-		);	
-	}
-});
-
-connection.onDidChangeWatchedFiles(_change => {
+connection.onDidChangeWatchedFiles(async _change => {
 	// Monitored files have change in VSCode
-	//TO_DO: Update Parser for that document
-	connection.console.log('We received an file change event');
+	for (let i = 0; i < _change.changes.length; i++) {
+		const change = _change.changes[i];
+		switch (change.type) {
+			case FileChangeType.Created:
+				parser.parseFile(change.uri);
+				break;
+			case FileChangeType.Deleted:
+				parser.removeFileParse(change.uri);
+				break;
+			case FileChangeType.Changed:
+				parser.parseFile(change.uri);
+				break;
+			default:
+				// do nothing
+				break;
+		}
+	}
+	//update completion item list
+	updateCompletionItemLists();
 });
 
+function updateCompletionItemLists(){
+	console.log("Updating Completion Items");
+
+	let parsedTEItems: CompletionItem[] = [];
+	let parsedIFItems: CompletionItem[] = [];
+	let parsedSPTItems: CompletionItem[] = [];
+	//for each element in parser map
+	for(const [key, value] of parser.definitionTable.entries()){
+		let uri:string;
+		if (Array.isArray(value.defLocation)){
+			uri = value.defLocation[0].location.uri;
+		}
+		else{
+			uri = value.defLocation.location.uri;
+		}
+		// Create a URL object from the URI string
+		const url = new URL(uri);
+		// Get the file path from the URL object
+		const filePath = url.pathname;
+		// Get the file name from the file path
+		const fileName = path.basename(filePath);
+
+		switch (value.type){
+			case "type": //needed in IF and SPT
+				//add to if and spt
+				const typeItem: CompletionItem = {
+					label: key,
+        			kind: CompletionItemKind.Variable,
+					detail: fileName
+				};
+				parsedIFItems.push(typeItem);
+				parsedSPTItems.push(typeItem);
+				break; 
+			case "bool": //needed in IF and SPT
+				//add to if and spt
+				const boolItem: CompletionItem = {
+					label: key,
+					kind: CompletionItemKind.Variable,
+					detail: fileName
+				};
+				parsedIFItems.push(boolItem);
+				parsedSPTItems.push(boolItem);
+				break; 
+			case "interface":  //needed in IF and TE
+				//add to if and te
+				const interfaceItem: CompletionItem = {
+					label: key,
+					kind: CompletionItemKind.Interface,
+					detail: fileName,
+					insertText: `${key}($1)`,
+        			insertTextFormat: 2
+				};
+				parsedIFItems.push(interfaceItem);
+				parsedTEItems.push(interfaceItem);
+				break; 
+			case "template": //needed in IF and TE
+				//add to if and te
+				const templateItem: CompletionItem = {
+					label: key,
+					kind: CompletionItemKind.Struct,
+					detail: fileName,
+					insertText: `${key}($1)`,
+        			insertTextFormat: 2
+				};
+				parsedIFItems.push(templateItem);
+				parsedTEItems.push(templateItem);
+				break; 
+			case "define": //needed in spt if and te
+				//add to if, te, and spt
+				const defineItem: CompletionItem = {
+					label: key,
+					kind: CompletionItemKind.Method,
+					detail: fileName,
+					insertText: `${key}($1)`,
+        			insertTextFormat: 2
+				};
+				parsedIFItems.push(defineItem);
+				parsedTEItems.push(defineItem);
+				parsedSPTItems.push(defineItem);
+				break; 
+		}
+	}
+	//redefine existing completion item arrays
+	// ...[arrayname] is a way to combine arrays (called the spread operator)
+	combinedIFCompletionItems = [...parsedIFItems, ...ifCompletionItems];
+	combinedSPTCompletionItems = [...parsedSPTItems, ...sptCompletionItems];
+	combinedTECompletionItems = [...parsedTEItems, ...teCompletionItems];
+}
 
 /*	This function identifies the hovered word and seperates it from any surrounding text
-*	INPUTS: document: TextDocument of hovered word
-			position: Position of hovered word in Text Document
+*	INPUTS: document: TextDocument of hovered word 
+*		position: Position of hovered word in Text Document
 *	OUTPUTS: String representing the hovered word seperated from any adjoining punctuation 
 *				or separator markings 
 */
-function getWord(document: TextDocument, position: Position)
-{
+function getWord(document: TextDocument, position: Position) {
 	const start = {
 		line: position.line,
 		character: 0,
 	};
 	const end = {
-	line: position.line + 1,
-	character: 0,
+		line: position.line + 1,
+		character: 0,
 	};
 
-    const line = document.getText({ start, end });
+	const line = document.getText({ start, end });
 	//check if line is a comment, if so return empty word
-	if(line.charAt(0) === '#'){
+	if (line.charAt(0) === '#') {
 		return "";
 	}
 
 	const text = line.replace(/[^\w\\$\\-]/g, " ");
-    const index = document.offsetAt(position) - document.offsetAt(start);
+
+	const index = document.offsetAt(position) - document.offsetAt(start);
 	const first = text.lastIndexOf(' ', index);
 	const last = text.indexOf(' ', index);
-	const word = text.substring(first !== -1 ? first+1 : 0, last !== -1 ? last : text.length - 1);
+	const word = text.substring(first !== -1 ? first + 1 : 0, last !== -1 ? last : text.length);
 	return word;
 }
-
-
 
 /*	This function identifies whether a term is not a keyword and needs a definition
 *	INPUTS: String search term 
@@ -163,9 +337,9 @@ function getWord(document: TextDocument, position: Position)
 *				True: likely to have a definition
 *				False: keyword, whitespace, or other invalid search teram
 */
-function needsDefinition(uri: string, searchTerm: string){
+function needsDefinition(uri: string, searchTerm: string) {
 
-	if( searchTerm === ' ' || searchTerm === ''){
+	if (searchTerm === ' ' || searchTerm === '') {
 		return false;
 	}
 
@@ -173,17 +347,19 @@ function needsDefinition(uri: string, searchTerm: string){
 	const fileExtension = path.extname(uri);
 
 	let searchList = null;
-	switch (fileExtension){
-		case ".te": searchList = teCompletionItems;	break;
-		case ".if": searchList =  ifCompletionItems; break;
-		case ".spt": searchList =  sptCompletionItems; break;
+	switch (fileExtension) {
+		//keep these to default completion item arrays
+		//do not use combined arrays
+		case ".te": searchList = teCompletionItems; break;
+		case ".if": searchList = ifCompletionItems; break;
+		case ".spt": searchList = sptCompletionItems; break;
 		case ".fc": searchList = fcCompletionItems; break;
 	}
 
-	if (searchList !== null){
+	if (searchList !== null) {
 		//identify if search term is a known keyword
 		for (const index in searchList) {
-			if(searchList[index].label === searchTerm){
+			if (searchList[index].label === searchTerm) {
 				return false;
 			}
 		}
@@ -194,28 +370,99 @@ function needsDefinition(uri: string, searchTerm: string){
 	}
 	return true;
 }
-
-//This handler provides the definition location on hover over a word
-connection.onDefinition(( {textDocument, position }): Definition | undefined => {
+connection.onHover( ({textDocument, position}): Hover | undefined => {
 	const document = documents.get(textDocument.uri);
-	if(document === undefined){
-		  return undefined;
+	if (document === undefined) {
+		return undefined;
 	}
 	const searchTerm = getWord(document, position);
-
-	if( needsDefinition(document.uri, searchTerm)){
-		//TO_DO: Connect to parser by the search term
-		//Parser should provide at Location object of the document uri and line position of start and end of defintiion
-		
-		return Location.create( document.uri, {
-			start: { line: 2, character: 5 },
-			end: { line: 4, character: 6 }
-			});
+	if(searchTerm.length === 0){
+		return undefined;
 	}
+	console.log("Searching for hover on " + searchTerm);
+	if (needsDefinition(document.uri, searchTerm)) {
 
+		let locations = parser.getLocations(searchTerm);
+		if(locations !== undefined){
+			console.log("Hover for " + searchTerm + " found");
+		}
+		if(Array.isArray(locations))
+		{
+
+			return { contents: locations[0].description};
+		}
+		else if(locations !== undefined){
+			return { contents: locations.description };
+		}
+	}
 	return undefined;
 });
 
+
+function selectString(str1: string, str2: string): string{
+	// If both strings are undefined, return null
+	const emptyRegex = /^[a-zA-Z_]+$/;
+
+	if(!emptyRegex.test(str1) && !emptyRegex.test(str2)){
+		throw  new Error('Both strings are empty');
+	}
+	// If only one of the strings is defined, return the defined string
+	if (!emptyRegex.test(str1)) {
+	  return str2;
+	}
+	if (!emptyRegex.test(str2)) {
+	  return str1;
+	}
+	// If both strings are defined and they are the same, return either
+	if (str1 === str2) {
+	  return str1;
+	}
+	// If both strings are defined but they are different, throw an error
+	throw new Error(`Both strings are defined and different: str1='${str1}', str2='${str2}'`);
+}
+
+//This handler provides the definition location on hover over a word
+connection.onDefinition(({ textDocument, position }): Definition | undefined => {
+	const document = documents.get(textDocument.uri);
+	if (document === undefined) {
+		return undefined;
+	}
+	const { line, character } = position;
+	const mainTerm = getWord(document, position);
+	const altTerm = getWord(document, { line, character:character-1}); //alternate search term for end of word
+
+	try{
+		const searchTerm = selectString(mainTerm, altTerm);
+		console.log("Searching for deinition on " + searchTerm);
+		if (needsDefinition(document.uri, searchTerm)) {
+			let locations = parser.getLocations(searchTerm);
+			if(locations !== undefined){
+				console.log("Deinition for " + searchTerm + " found");
+			}
+			if(Array.isArray(locations))
+			{
+				let temp = [];
+				for(let i = 0; i < locations.length; i++){
+					temp.push(locations[i].location);
+				}
+				return temp;
+			}
+			else if(locations !== undefined){
+				return locations.location;
+			}
+	}
+	}catch(error){
+		if(error instanceof Error){
+			console.error(`Error: ${error.message}`);
+		}
+		else{
+			console.error('An unexpected error occurred:', error);
+		}
+	}
+	
+	
+	return undefined;
+});
 
 // This handler provides the initial list of the completion items.
 connection.onCompletion(
@@ -226,13 +473,14 @@ connection.onCompletion(
 		const uri = _textDocumentPosition.textDocument.uri;
 
 		const fileExtension = path.extname(uri);
-		switch (fileExtension){
-			case ".te": return teCompletionItems;
-			case ".if": return ifCompletionItems;
-			case ".spt": return sptCompletionItems;
-			case ".fc": return fcCompletionItems;
+		switch (fileExtension) {
+			//use combined completion item array here
+			case ".te": return combinedTECompletionItems;
+			case ".if": return combinedIFCompletionItems;
+			case ".spt": return combinedSPTCompletionItems;
+			case ".fc": return fcCompletionItems; //fc wont be added to, and so is kept default
 		}
-		
+
 		//not my circus not my monkeys
 		return [];
 	}

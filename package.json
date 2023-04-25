@@ -3,7 +3,7 @@
 	"displayName": "SELinuxHelper",
 	"description": "Syntax Highlighting and Programmatic Languge Features for SELinux Policy Files (.fc, .if, .spt, .te)",
 	"icon": "client/images/selinux-penguin.png",
-	"version": "0.1.0",
+	"version": "0.2.3",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
@@ -116,7 +116,7 @@
 	},
 	"devDependencies": {
 		"@types/mocha": "^9.1.0",
-		"@types/node": "^16.11.7",
+		"@types/node": "^16.18.24",
 		"@types/vscode": "^1.76.0",
 		"@typescript-eslint/eslint-plugin": "^5.54.0",
 		"@typescript-eslint/parser": "^5.54.0",
@@ -126,6 +126,7 @@
 	},
 	"dependencies": {
 		"fs": "^0.0.1-security",
-		"glob": "^9.3.2"
+		"glob": "^9.3.2",
+		"vscode-uri": "^3.0.7"
 	}
 }

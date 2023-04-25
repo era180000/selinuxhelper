@@ -43,7 +43,13 @@ export function activate(context: ExtensionContext) {
 			// Notify the server about file changes to '.clientrc files contained in the workspace
 			//To do, notify changes to included paths or settings
 			configurationSection: 'seLinuxHelper',
-			fileEvents: workspace.createFileSystemWatcher('**/.clientrc')
+			fileEvents: [
+				workspace.createFileSystemWatcher('**/*.te'),
+				workspace.createFileSystemWatcher('**/*.fc'),
+				workspace.createFileSystemWatcher('**/*.spt'),
+				workspace.createFileSystemWatcher('**/*.if'),
+		]		
+			
 		},
 		initializationOptions: {
 			pathInclusion: vscode.workspace.getConfiguration('seLinuxHelper').get<Array<String>>('pathInclusion'),
@@ -57,6 +63,13 @@ export function activate(context: ExtensionContext) {
 		serverOptions,
 		clientOptions
 	);
+
+	vscode.workspace.onDidDeleteFiles( (e => {
+		for(let i = 0; i < e.files.length; i++)
+		{
+			client.sendRequest('custom/delete', e.files[i]);
+		}
+	}));
 
 	// Start the client. This will also launch the server
 	client.start();
