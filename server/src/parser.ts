@@ -134,8 +134,8 @@ export class FileParser {
                         this.addLocation(
                             match[0], 
                             Location.create(uri, {
-                                start: { line: 0, character: 0 },
-                                end: { line: 0, character: 0 }
+                                start: { line: startLine, character: 0 },
+                                end: { line: startLine, character: 0 }
                             }),
                             type, 
                             description
@@ -187,8 +187,8 @@ export class FileParser {
                     this.addLocation(
                         match[0], 
                         Location.create(uri, {
-                            start: { line: 0, character: 0 },
-                            end: { line: 0, character: 0 }
+                            start: { line: startLine, character: 0 },
+                            end: { line: startLine, character: 0 }
                         }),
                         "define", 
                         description
