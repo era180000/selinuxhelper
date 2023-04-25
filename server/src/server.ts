@@ -172,11 +172,6 @@ connection.onRequest('custom/delete', async (params) => {
 	parser.removeFileParse(params.external);
 });
 
-
-documents.onDidOpen(e => {
-	parser.parseFile(e.document.uri);
-});
-
 connection.onDidChangeConfiguration(async change => {
 	if(change.settings !== null) {
 		
