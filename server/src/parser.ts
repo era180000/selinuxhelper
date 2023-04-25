@@ -6,7 +6,7 @@ import {
 import { URI } from 'vscode-uri';
 import * as fs from 'fs';
 import * as path from 'path';
-import { DefinitionInfo } from './definitionInfo';
+import { DefinitionInfo , TextLocation} from './definitionInfo';
 
 export class FileParser {
     definitionTable: Map<string, DefinitionInfo>;
@@ -17,21 +17,21 @@ export class FileParser {
     }
 
 
-    addLocation(symbol: string, location: Location, type:string){
+    addLocation(symbol: string, location: Location, type:string, text: string){
         let result = this.definitionTable.get(symbol)?.defLocation;
         //if the symbol is not in the map
         if(result === undefined){
-            this.definitionTable.set(symbol, new DefinitionInfo(location, type)); //add new entry to map with location being a single object
+            this.definitionTable.set(symbol, new DefinitionInfo(new TextLocation(text, location), type)); //add new entry to map with location being a single object
             return;
         }
         //if result is array add it
         else if(Array.isArray(result)){
-            result.push(location); //because result is an array, it still pushes to the array in the map
+            result.push(new TextLocation(text, location)); //because result is an array, it still pushes to the array in the map
         }
         //if location already exists but is not an array
         else{
             this.definitionTable.delete(symbol); //delete the old entry
-            this.definitionTable.set(symbol, new DefinitionInfo([result!, location], type)); //add new entry where defLocation is an array instead of a single object
+            this.definitionTable.set(symbol, new DefinitionInfo([result!, new TextLocation(text, location)], type)); //add new entry where defLocation is an array instead of a single object
         }
 
     }
@@ -126,14 +126,19 @@ export class FileParser {
                             i++;
 
                         }while(parenthesisStack.length !== 0 && i < lines.length);
-                        
+                        let location = Location.create(uri, {
+                            start: { line: startLine, character: 0 },
+                            end: { line: i-1, character: lines[i-1].length }
+                        });
+                        let description =  "```\n"  + document.getText(location.range)+ '\n```\n' + document.uri;
                         this.addLocation(
                             match[0], 
                             Location.create(uri, {
-                                start: { line: startLine, character: 0 },
-                                end: { line: i-1, character: lines[i-1].length }
+                                start: { line: 0, character: 0 },
+                                end: { line: 0, character: 0 }
                             }),
-                            type
+                            type, 
+                            description
                         );
                         i--;
                     }
@@ -174,11 +179,19 @@ export class FileParser {
                         i++;
                     }while(parenthesisStack.length !== 0);
                     
-                    this.addLocation(match[0], Location.create(uri, {
+                    let location = Location.create(uri, {
                         start: { line: startLine, character: 0 },
                         end: { line: i-1, character: lines[i-1].length }
+                    });
+                    let description = "```\n"  + document.getText(location.range)+ '\n```\n' + document.uri;
+                    this.addLocation(
+                        match[0], 
+                        Location.create(uri, {
+                            start: { line: 0, character: 0 },
+                            end: { line: 0, character: 0 }
                         }),
-                        "define" //i think all spt has are defines, so we don't need to check for other types
+                        "define", 
+                        description
                     );
                     i--;
                 }
@@ -199,7 +212,7 @@ export class FileParser {
             for (let [key, value] of this.definitionTable.entries()) {
                 if (Array.isArray(value.defLocation)){ //if the value is a list
                     for (let element of value.defLocation){ //iterate through list and remove any matches
-                        if (element.uri === uri){
+                        if (element.location.uri === uri){
                             //remove element from list
                             //this will remove the element and not set the index to undefined
                             const index = value.defLocation.indexOf(element);
@@ -224,7 +237,7 @@ export class FileParser {
                 //if the value is a single locations
                 else{
                     //check if the location matches uri
-                    if(value.defLocation.uri === uri){ //this should always be fine since we've already checked that it is not an array
+                    if(value.defLocation.location.uri === uri){ //this should always be fine since we've already checked that it is not an array
                         //if so, remove from map
                         this.definitionTable.delete(key);
                     }

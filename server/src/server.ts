@@ -17,6 +17,7 @@ import {
 	TextDocumentSyncKind,
 	InitializeResult,
 	Position,
+	Hover,
 	CompletionItemKind,
 } from 'vscode-languageserver/node';
 import { URI } from "vscode-uri";
@@ -76,6 +77,7 @@ connection.onInitialize(async (params: InitializeParams) => {
 				resolveProvider: true,
 			},
 			definitionProvider: true,
+			hoverProvider: true,
 		}
 	};
 	if (hasWorkspaceFolderCapability) {
@@ -218,10 +220,10 @@ function updateCompletionItemLists(){
 	for(const [key, value] of parser.definitionTable.entries()){
 		let uri:string;
 		if (Array.isArray(value.defLocation)){
-			uri = value.defLocation[0].uri;
+			uri = value.defLocation[0].location.uri;
 		}
 		else{
-			uri = value.defLocation.uri;
+			uri = value.defLocation.location.uri;
 		}
 		// Create a URL object from the URI string
 		const url = new URL(uri);
@@ -369,6 +371,35 @@ function needsDefinition(uri: string, searchTerm: string) {
 	return true;
 }
 
+connection.onHover( ({textDocument, position}): Hover | undefined => {
+	const document = documents.get(textDocument.uri);
+	if (document === undefined) {
+		return undefined;
+	}
+	const searchTerm = getWord(document, position);
+	if(searchTerm.length === 0){
+		return undefined;
+	}
+	console.log("Searching for hover on " + searchTerm);
+	if (needsDefinition(document.uri, searchTerm)) {
+
+		let locations = parser.getLocations(searchTerm);
+		if(locations !== undefined){
+			console.log("Hover for " + searchTerm + " found");
+		}
+		if(Array.isArray(locations))
+		{
+
+			return { contents: locations[0].description};
+		}
+		else if(locations !== undefined){
+			return { contents: locations.description };
+		}
+	}
+	return undefined;
+});
+
+
 //This handler provides the definition location on hover over a word
 connection.onDefinition(({ textDocument, position }): Definition | undefined => {
 	const document = documents.get(textDocument.uri);
@@ -383,9 +414,18 @@ connection.onDefinition(({ textDocument, position }): Definition | undefined => 
 		if(locations !== undefined){
 			console.log("Deinition for " + searchTerm + " found");
 		}
-		return locations;
+		if(Array.isArray(locations))
+		{
+			let temp = [];
+			for(let i = 0; i < locations.length; i++){
+				temp.push(locations[i].location);
+			}
+			return temp;
+		}
+		else if(locations !== undefined){
+			return locations.location;
+		}
 	}
-
 	return undefined;
 });
 
