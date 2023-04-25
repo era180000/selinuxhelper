@@ -401,20 +401,17 @@ connection.onHover( ({textDocument, position}): Hover | undefined => {
 
 function selectString(str1: string, str2: string): string{
 	// If both strings are undefined, return null
-	const emptyRegex = /^[a-zA-Z_]+$/;
-
+	const emptyRegex = /^[a-zA-Z_0-9\-]+$/;
 	if(!emptyRegex.test(str1) && !emptyRegex.test(str2)){
 		throw  new Error('Both strings are empty');
 	}
-	// If only one of the strings is defined, return the defined string
-	if (!emptyRegex.test(str1)) {
+	if (!emptyRegex.test(str1)) { 	//If only one of the strings is defined, return the defined string
 	  return str2;
 	}
 	if (!emptyRegex.test(str2)) {
 	  return str1;
 	}
-	// If both strings are defined and they are the same, return either
-	if (str1 === str2) {
+	if (str1 === str2) { 	//If both strings are defined and they are the same, return either
 	  return str1;
 	}
 	// If both strings are defined but they are different, throw an error
