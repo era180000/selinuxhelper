@@ -2,7 +2,7 @@
 
 ![SELinux Penguin](client/images/selinux-penguin.png)
 
-SElinuxhelper is a VS Code exentsion that allows syntax highlighting for various types of SELinux files. 
+SElinuxhelper is a VS Code exentsion that allows code completion, intellisense of definitions, and syntax highlighting for various types of SELinux files. 
 
 The following are the supported file types: **.te, .if, .fc, and .spt.**
 
@@ -10,8 +10,9 @@ The following are the supported file types: **.te, .if, .fc, and .spt.**
 
 ## <u> Definition Hover and Go-To </u>
 
-To see the definition hold control while hovering over a term.
+To see the definition hovering over a term.
 Use Ctrl + Click to open the file location containing the definition
+Use F12 while cursor is in a word or it is highlighted to jump to the file location of the definition
 
 ## <u> Comment Highlighting </u>
 
