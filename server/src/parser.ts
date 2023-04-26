@@ -99,8 +99,8 @@ export class FileParser {
                 this.addLocation(
                     names[i], //name at i-th index
                     Location.create(uri, {
-                        start: { line: lineNumber, character: 0 }, //dunno why lineNumber is off by one, so I just subtract one
-                        end: { line: lineNumber, character: match[0].length } //maybe its because we think lines start at 1, but its actually an array and starts at 0
+                        start: { line: lineNumber, character: 0 },
+                        end: { line: lineNumber, character: match[0].length }
                     }),
                     keyword, //keyword for sorting
                     description
