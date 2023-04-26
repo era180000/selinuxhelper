@@ -94,7 +94,7 @@ export class FileParser {
                     start: { line: lineNumber, character: 0 },
                     end: { line: lineNumber, character: match[0].length }
                 });
-                let description =  "```\n"  + document.getText(location.range)+ '\n```\n' + document.uri;
+                let description =  "```te\n"  + document.getText(location.range)+ '\n```\n' + document.uri;
                 //add it to the map
                 this.addLocation(
                     names[i], //name at i-th index
@@ -155,7 +155,7 @@ export class FileParser {
                             start: { line: startLine, character: 0 },
                             end: { line: i-1, character: lines[i-1].length }
                         });
-                        let description =  "```\n"  + document.getText(location.range)+ '\n```\n' + document.uri;
+                        let description =  "```if\n"  + document.getText(location.range)+ '\n```\n' + document.uri;
                         this.addLocation(
                             match[0], 
                             Location.create(uri, {
@@ -208,7 +208,7 @@ export class FileParser {
                         start: { line: startLine, character: 0 },
                         end: { line: i-1, character: lines[i-1].length }
                     });
-                    let description = "```\n"  + document.getText(location.range)+ '\n```\n' + document.uri;
+                    let description = "```spt\n"  + document.getText(location.range)+ '\n```\n' + document.uri;
                     this.addLocation(
                         match[0], 
                         Location.create(uri, {
