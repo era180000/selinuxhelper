@@ -75,13 +75,70 @@ export class FileParser {
     private parseTE(document: TextDocument, uri: string){
         console.log("Parsing " + uri);
         //TO-DO: Add
-        //when putting a definition into the table, please specify the type ("type" or "bool" in .te files)
+        //when putting a definition into the table, please specify the type ("type" or "attribute_role" in .te files)
         //EXAMPLE: this.addLocation(match[0], Location.create(uri, {
         //                              start: { line: startLine, character: 0 },
         //                              end: { line: i-1, character: lines[i-1].length }
         //                          }),
         //                          type 
         //                      );
+
+        const text = document.getText();
+        //const lines = text.split(/\r?\n/);
+        const regex = /^(type|attribute_role|attribute|bool)\s+((?:\w+(?:,\s*)?)+)(?:\s+alias\s+(\w+))?;$/gm; //look at this amazing regex
+        
+        let match;
+        let lineNumber = 1;
+        let previousMatchEndIndex = 0;
+        while ((match = regex.exec(text)) !== null) {
+            //console.log(element);
+            const keyword = match[1];
+            const names = match[2].split(/\s*,\s*/);
+
+            //keep track of line location with different regex matcher
+            const newlinesBeforeMatch = text.slice(previousMatchEndIndex, match.index).match(/(?:\r\n|\n)/g);
+            lineNumber += newlinesBeforeMatch ? newlinesBeforeMatch.length : 0;
+            console.log(`${lineNumber}: Keyword: ${keyword}`, names);
+            previousMatchEndIndex = match.index + match[0].length;  
+
+
+            if(names.length == 1){ //if single definition on a line
+                let location = Location.create(uri, {
+                    start: { line: lineNumber-1, character: 0 },
+                    end: { line: lineNumber-1, character: match[0].length }
+                });
+                let description =  "```\n"  + document.getText(location.range)+ '\n```\n' + document.uri;
+                this.addLocation(
+                    names[0], 
+                    Location.create(uri, {
+                        start: { line: lineNumber-1, character: 0 },
+                        end: { line: lineNumber-1, character: 0 }
+                    }),
+                    keyword, 
+                    description
+                );
+            }
+            else{ //if there are multiple declarations on the same
+                for(let i=0; i < names.length; i++){
+                    let location = Location.create(uri, {
+                        start: { line: lineNumber-1, character: 0 },
+                        end: { line: lineNumber-1, character: match[0].length }
+                    });
+                    let description =  "```\n"  + document.getText(location.range)+ '\n```\n' + document.uri;
+                    this.addLocation(
+                        names[i], 
+                        Location.create(uri, {
+                            start: { line: lineNumber-1, character: 0 },
+                            end: { line: lineNumber-1, character: 0 }
+                        }),
+                        keyword, 
+                        description
+                    );
+                }
+            }   
+                 
+        }
+        
     }
 
     private parseIF(document: TextDocument, uri: string){
