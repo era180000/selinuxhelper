@@ -101,15 +101,14 @@ export class FileParser {
             console.log(`${lineNumber}: Keyword: ${keyword}`, names);
             previousMatchEndIndex = match.index + match[0].length;  
 
-
-            if(names.length == 1){ //if single definition on a line
+            for(let i=0; i < names.length; i++){
                 let location = Location.create(uri, {
                     start: { line: lineNumber-1, character: 0 },
                     end: { line: lineNumber-1, character: match[0].length }
                 });
                 let description =  "```\n"  + document.getText(location.range)+ '\n```\n' + document.uri;
                 this.addLocation(
-                    names[0], 
+                    names[i], 
                     Location.create(uri, {
                         start: { line: lineNumber-1, character: 0 },
                         end: { line: lineNumber-1, character: 0 }
@@ -118,24 +117,7 @@ export class FileParser {
                     description
                 );
             }
-            else{ //if there are multiple declarations on the same
-                for(let i=0; i < names.length; i++){
-                    let location = Location.create(uri, {
-                        start: { line: lineNumber-1, character: 0 },
-                        end: { line: lineNumber-1, character: match[0].length }
-                    });
-                    let description =  "```\n"  + document.getText(location.range)+ '\n```\n' + document.uri;
-                    this.addLocation(
-                        names[i], 
-                        Location.create(uri, {
-                            start: { line: lineNumber-1, character: 0 },
-                            end: { line: lineNumber-1, character: 0 }
-                        }),
-                        keyword, 
-                        description
-                    );
-                }
-            }   
+            
                  
         }
         
