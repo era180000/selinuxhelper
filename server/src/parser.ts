@@ -74,53 +74,39 @@ export class FileParser {
 
     private parseTE(document: TextDocument, uri: string){
         console.log("Parsing " + uri);
-        //TO-DO: Add
-        //when putting a definition into the table, please specify the type ("type" or "attribute_role" in .te files)
-        //EXAMPLE: this.addLocation(match[0], Location.create(uri, {
-        //                              start: { line: startLine, character: 0 },
-        //                              end: { line: i-1, character: lines[i-1].length }
-        //                          }),
-        //                          type 
-        //                      );
-
         const text = document.getText();
-        //const lines = text.split(/\r?\n/);
         const regex = /^(type|attribute_role|attribute|bool)\s+((?:\w+(?:,\s*)?)+)(?:\s+alias\s+(\w+))?;$/gm; //look at this amazing regex
         
         let match;
-        let lineNumber = 1;
+        let lineNumber = 0;
         let previousMatchEndIndex = 0;
-        while ((match = regex.exec(text)) !== null) {
-            //console.log(element);
-            const keyword = match[1];
-            const names = match[2].split(/\s*,\s*/);
+        while ((match = regex.exec(text)) !== null) { //match the next line that fits the god forsaken regex above
+            const keyword = match[1]; //key word is the first capture group (type, bool, etc)
+            const names = match[2].split(/\s*,\s*/); //name(s) is the second capture group. Can be a list like type test1, test2; have to split them by commas
 
             //keep track of line location with different regex matcher
-            const newlinesBeforeMatch = text.slice(previousMatchEndIndex, match.index).match(/(?:\r\n|\n)/g);
-            lineNumber += newlinesBeforeMatch ? newlinesBeforeMatch.length : 0;
-            console.log(`${lineNumber}: Keyword: ${keyword}`, names);
+            const newlinesBeforeMatch = text.slice(previousMatchEndIndex, match.index).match(/(?:\r\n|\n)/g); //calculate number of newlines from previous match to current match
+            lineNumber += newlinesBeforeMatch ? newlinesBeforeMatch.length : 0; //if newlinesBeforeMatch is not null (true), add its length to lineNumber. Otherwise add 0 to line number
             previousMatchEndIndex = match.index + match[0].length;  
 
-            for(let i=0; i < names.length; i++){
+            for(let i=0; i < names.length; i++){ //for each name in the array. Most of the time this executes once
                 let location = Location.create(uri, {
-                    start: { line: lineNumber-1, character: 0 },
-                    end: { line: lineNumber-1, character: match[0].length }
+                    start: { line: lineNumber, character: 0 },
+                    end: { line: lineNumber, character: match[0].length }
                 });
                 let description =  "```\n"  + document.getText(location.range)+ '\n```\n' + document.uri;
+                //add it to the map
                 this.addLocation(
-                    names[i], 
+                    names[i], //name at i-th index
                     Location.create(uri, {
-                        start: { line: lineNumber-1, character: 0 },
-                        end: { line: lineNumber-1, character: 0 }
+                        start: { line: lineNumber, character: 0 }, //dunno why lineNumber is off by one, so I just subtract one
+                        end: { line: lineNumber, character: match[0].length } //maybe its because we think lines start at 1, but its actually an array and starts at 0
                     }),
-                    keyword, 
+                    keyword, //keyword for sorting
                     description
                 );
-            }
-            
-                 
-        }
-        
+            }    
+        }  
     }
 
     private parseIF(document: TextDocument, uri: string){
