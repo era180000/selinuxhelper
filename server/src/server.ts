@@ -46,6 +46,7 @@ let pathsIncluded: Array<String>;
 let combinedTECompletionItems: CompletionItem[];
 let combinedIFCompletionItems: CompletionItem[];
 let combinedSPTCompletionItems: CompletionItem[];
+let combinedFCCompletionItems: CompletionItem[];
 
 const defaultSettings: Array<String> = ["/usr/share/selinux/devel/include/"];
 
@@ -216,6 +217,7 @@ function updateCompletionItemLists(){
 	let parsedTEItems: CompletionItem[] = [];
 	let parsedIFItems: CompletionItem[] = [];
 	let parsedSPTItems: CompletionItem[] = [];
+	let parsedFCItems: CompletionItem[] = [];
 	//for each element in parser map
 	for(const [key, value] of parser.definitionTable.entries()){
 		let uri:string;
@@ -233,25 +235,24 @@ function updateCompletionItemLists(){
 		const fileName = path.basename(filePath);
 
 		switch (value.type){
-			case "type": //needed in IF and SPT
-				//add to if and spt
+			case "type": //needed in IF and FC
 				const typeItem: CompletionItem = {
-					label: key,
-        			kind: CompletionItemKind.Variable,
-					detail: fileName
-				};
-				parsedIFItems.push(typeItem);
-				parsedSPTItems.push(typeItem);
-				break; 
-			case "bool": //needed in IF and SPT
-				//add to if and spt
-				const boolItem: CompletionItem = {
 					label: key,
 					kind: CompletionItemKind.Variable,
 					detail: fileName
 				};
-				parsedIFItems.push(boolItem);
-				parsedSPTItems.push(boolItem);
+				parsedIFItems.push(typeItem);
+				parsedFCItems.push(typeItem);
+				break;
+			case "attribute_role":
+			case "attribute":
+			case "bool": //needed in IF
+				const teItem: CompletionItem = {
+					label: key,
+					kind: CompletionItemKind.Variable,
+					detail: fileName
+				};
+				parsedIFItems.push(teItem);
 				break; 
 			case "interface":  //needed in IF and TE
 				//add to if and te
@@ -297,6 +298,7 @@ function updateCompletionItemLists(){
 	combinedIFCompletionItems = [...parsedIFItems, ...ifCompletionItems];
 	combinedSPTCompletionItems = [...parsedSPTItems, ...sptCompletionItems];
 	combinedTECompletionItems = [...parsedTEItems, ...teCompletionItems];
+	combinedFCCompletionItems = [...parsedFCItems, ...fcCompletionItems];
 }
 
 /*	This function identifies the hovered word and seperates it from any surrounding text
@@ -475,7 +477,7 @@ connection.onCompletion(
 			case ".te": return combinedTECompletionItems;
 			case ".if": return combinedIFCompletionItems;
 			case ".spt": return combinedSPTCompletionItems;
-			case ".fc": return fcCompletionItems; //fc wont be added to, and so is kept default
+			case ".fc": return combinedFCCompletionItems; 
 		}
 
 		//not my circus not my monkeys
