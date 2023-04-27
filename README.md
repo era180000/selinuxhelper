@@ -14,6 +14,10 @@ To see the definition hovering over a term.
 Use Ctrl + Click to open the file location containing the definition
 Use F12 while cursor is in a word or it is highlighted to jump to the file location of the definition
 
+Example:
+
+![SELinux Peek](client/images/SELinux-Peek-Example.png)
+
 ## <u> Comment Highlighting </u>
 
 Comments in all files are colored **<span style="color:#6a9955">green</span>**.
@@ -73,13 +77,90 @@ No additional requirements for this extension.
 
 # Extension Settings
 
-No additional extension settings for this extension.
+## Path Inclusion
+Users are able to specify the include in intellisense definition parsing. The default is `/user/share/selinux/devel/include/`.
+
+This setting can be edited under `File > Preferences > Settings` and searching `SELinux`. To add several paths, seperate them with a comma.
+
+The `settings.json` appears as follows:
+
+![SELinux Settings](client/images/SELinux-dpExample.png)
 
 # Release Notes
 
-## <u> 0.0.2 </u>
+## Releases
+## <u> 1.0.0 </u>
+[2023-04-27]
+### Added
 
-Initial prerelease of SeLinuxhelper.
+    - Intital realease of SELinuxHelper
+## Initial Prereleases
+
+## <u> 0.2.3 </u>
+[2023-04-21]
+
+### Fixed
+
+    -Fixed f12 goto functionality
+
+## <u> 0.2.2 </u>
+[2023-04-21]
+### Added
+
+    -Added f12 goto functionality. Known Issue: Goes to top of file instead of correct in-file location
+    -Changed hover to hover in place
+    
+### Fixed
+
+    -Fixed file read error with proper handling. Will just skip unreadable files now
+
+## <u> 0.2.1 </u>
+[2023-04-21]
+### Added
+
+    -Added definitionType to parser for dynamic code completion
+    -Added dynamic code completion with file location
+    -Removed optional_policy from default keyword list (it's a defined macro not a default function)
+
+### Fixed
+
+    -Fixed file size error when parsing 2GB+ file
+    -Fixed symbolic link parsing error (Linux)
+    
+## <u> 0.2.0 </u>
+[2023-04-21]
+### Added
+
+    -Finished if and spt parsing for go to, hover, and code completion
+    -Added Go To functionality (LS)
+    -Added Hover functionality (LS)
+    -Added handlers for onOpen, onSave, onDidChangeWatchedFile for reparsing
+    -Added automatic parsing of all workspace folders and include paths
+
+## <u> 0.1.0 </u>
+[2023-03-31]
+### Added
+
+    -Finished Syntax Highlighting
+    -Implemented base language server
+    -Finished defualt keyword code completion (LS)
+    -Added include path setting for future parser (LS)
+
+
+## <u> 0.0.2 </u>
+[2023-03-08]
+### Added
+
+    -Add syntax highlighting for .spt 
+    -Updated Readme
+    -Updated Changelog
+
+## <u> 0.0.1 </u>
+[2023-03-08]
+### Added
+
+    -Syntax Highlighting Initial
+
 
 # Credits
 
