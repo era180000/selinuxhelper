@@ -35,6 +35,21 @@ export class FileParser {
         }
 
     }
+
+    private pullLocation(symbol: string, document: TextDocument, location: Location, type: string)
+    {
+        let description =  "```te\n"  + document.getText(location.range)+ '\n```\n' + document.uri;
+        //add it to the map
+        this.addLocation(
+            symbol, 
+            Location.create(location.uri, {
+                start: { line: location.range.start.line, character: 0 },
+                end: { line: location.range.start.line, character: 0 }
+            }),
+            type, //keyword for sorting
+            description
+        );
+    }
    
     //parses a file and adds it to the definition table
     parseFile(uri: string) {
@@ -74,112 +89,56 @@ export class FileParser {
 
     private parseTE(document: TextDocument, uri: string){
         console.log("Parsing " + uri);
+        
         const text = document.getText();
-        //const regex = /^(type|typealias|attribute_role|attribute|bool)\s+((?:\w+(?:,\s*)?)+)(?:\s+alias\s+(?:\{?\s*(\w+(?:\s+\w+)*)\s*\}?|\w+))?;$/gm;  //look at this amazing regex
-        const typeRegex = /^\s*type\s+(\w+)(?:.*alias\s+({[\w\s]+}|[\w]+))?/gm;
-
         const lines = text.split(/\r?\n/);
+        const typeRegex = /type\s+(\w+)(?:.*alias\s+({[\w\s]+}|[\w]+))?/gm;
         for(let i = 0; i < lines.length; i++){
             const match = typeRegex.exec(lines[i]);
             if (match){
                 const typeWord = match[1];
                 const aliasWords = match[2];
 
-                let location = Location.create(uri, {
+                this.pullLocation(typeWord, document, Location.create(uri, {
                     start: { line: i, character: 0 },
-                    end: { line: i, character: match[0].length }
-                });
-                let description =  "```te\n"  + document.getText(location.range)+ '\n```\n' + document.uri;
-                //add it to the map
-                this.addLocation(
-                    match[1], //name at i-th index
-                    Location.create(uri, {
-                        start: { line: i, character: 0 },
-                        end: { line: i, character: 0 }
-                    }),
-                    "type", //keyword for sorting
-                    description
-                );
+                    end: { line: i, character:  match[0].length  }
+                }), "type" );
+                
                 if (aliasWords){
                     if(aliasWords.indexOf("{") === -1){ //if single alias
-                        let location = Location.create(uri, {
+
+                        this.pullLocation(aliasWords, document, Location.create(uri, {
                             start: { line: i, character: 0 },
                             end: { line: i, character: match[0].length }
-                        });
-                        let description =  "```te\n"  + document.getText(location.range)+ '\n```\n' + document.uri;
-                        //add it to the map
-                        this.addLocation(
-                            aliasWords, //name at i-th index
-                            Location.create(uri, {
-                                start: { line: i, character: 0 },
-                                end: { line: i, character: 0 }
-                            }),
-                            "type", //keyword for sorting
-                            description
-                        );
-                        console.log()
+                        }), "type" );
                     }
                     else{
                         const cleanedLine = aliasWords.replace(/[{}]/g, '').trim();
                         const aliasArray = cleanedLine.split(/\s+/);
                         aliasArray.forEach(element => {
-                            let location = Location.create(uri, {
+                            this.pullLocation(element, document, Location.create(uri, {
                                 start: { line: i, character: 0 },
                                 end: { line: i, character: match[0].length }
-                            });
-                            let description =  "```te\n"  + document.getText(location.range)+ '\n```\n' + document.uri;
-                            //add it to the map
-                            this.addLocation(
-                                element, //name at i-th index
-                                Location.create(uri, {
-                                    start: { line: i, character: 0 },
-                                    end: { line: i, character: 0 }
-                                }),
-                                "type", //keyword for sorting
-                                description
-                            );
+                            }), "type" );
                         });
                     }
                 }
-                // Your if statement logic here
-                //console.log(`Line ${i + 1}: Type: ${typeWord}, Alias: ${aliasWords}`);
+            }
+
+            if (/^\s*(attribute|attribute_role|bool)/.test(lines[i])) { // check if line starts with "attribute" or "template"
+                const secondWord = lines[i].match(/\b\w+\b/g)?.[1];
+                let type = lines[i].match(/\b\w+\b/g)?.[0];
+                if(type === undefined) {
+                    type = "attribute";
+                }
+                if(secondWord !== undefined){
+                    this.pullLocation(secondWord, document, Location.create(uri, {
+                        start: { line: i, character: 0 },
+                        end: { line: i, character:  lines[i].length  }
+                    }), type );
+                }
             }
         }
-
-        // let match;
-        // let lineNumber = 0;
-        // let previousMatchEndIndex = 0;
-        // while ((match = regex.exec(text)) !== null) { //match the next line that fits the god forsaken regex above
-        //     const keyword = match[1]; //key word is the first capture group (type, bool, etc)
-        //     const names = match[2].split(/\s*,\s*/); //name(s) is the second capture group. Can be a list like type test1, test2; have to split them by commas
-        //     const alias = match[3];
-        //     if(alias){
-        //         console.log(alias);
-        //     }
-            
-        //     //keep track of line location with different regex matcher
-        //     const newlinesBeforeMatch = text.slice(previousMatchEndIndex, match.index).match(/(?:\r\n|\n)/g); //calculate number of newlines from previous match to current match
-        //     lineNumber += newlinesBeforeMatch ? newlinesBeforeMatch.length : 0; //if newlinesBeforeMatch is not null (true), add its length to lineNumber. Otherwise add 0 to line number
-        //     previousMatchEndIndex = match.index + match[0].length;  
-
-        //     for(let i=0; i < names.length; i++){ //for each name in the array. Most of the time this executes once
-                // let location = Location.create(uri, {
-                //     start: { line: lineNumber, character: 0 },
-                //     end: { line: lineNumber, character: match[0].length }
-                // });
-                // let description =  "```te\n"  + document.getText(location.range)+ '\n```\n' + document.uri;
-                // //add it to the map
-                // this.addLocation(
-                //     names[i], //name at i-th index
-                //     Location.create(uri, {
-                //         start: { line: lineNumber, character: 0 },
-                //         end: { line: lineNumber, character: match[0].length }
-                //     }),
-                //     keyword, //keyword for sorting
-                //     description
-                // );
-        //     }    
-        // }  
     }
 
     private parseIF(document: TextDocument, uri: string){
@@ -224,20 +183,11 @@ export class FileParser {
                             i++;
 
                         }while(parenthesisStack.length !== 0 && i < lines.length);
-                        let location = Location.create(uri, {
+
+                        this.pullLocation(match[0], document, Location.create(uri, {
                             start: { line: startLine, character: 0 },
                             end: { line: i-1, character: lines[i-1].length }
-                        });
-                        let description =  "```if\n"  + document.getText(location.range)+ '\n```\n' + document.uri;
-                        this.addLocation(
-                            match[0], 
-                            Location.create(uri, {
-                                start: { line: startLine, character: 0 },
-                                end: { line: startLine, character: 0 }
-                            }),
-                            type, 
-                            description
-                        );
+                        }), type );
                         i--;
                     }
                 }
@@ -277,20 +227,11 @@ export class FileParser {
                         i++;
                     }while(parenthesisStack.length !== 0);
                     
-                    let location = Location.create(uri, {
+
+                    this.pullLocation(match[0], document, Location.create(uri, {
                         start: { line: startLine, character: 0 },
                         end: { line: i-1, character: lines[i-1].length }
-                    });
-                    let description = "```spt\n"  + document.getText(location.range)+ '\n```\n' + document.uri;
-                    this.addLocation(
-                        match[0], 
-                        Location.create(uri, {
-                            start: { line: startLine, character: 0 },
-                            end: { line: startLine, character: 0 }
-                        }),
-                        "define", 
-                        description
-                    );
+                    }), "define" );
                     i--;
                 }
             }
