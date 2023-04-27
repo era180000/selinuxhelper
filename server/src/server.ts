@@ -243,6 +243,7 @@ function updateCompletionItemLists(){
 				};
 				parsedIFItems.push(typeItem);
 				parsedFCItems.push(typeItem);
+				parsedTEItems.push(typeItem);
 				break;
 			case "attribute_role":
 			case "attribute":
@@ -253,6 +254,7 @@ function updateCompletionItemLists(){
 					detail: fileName
 				};
 				parsedIFItems.push(teItem);
+				parsedTEItems.push(teItem);
 				break; 
 			case "interface":  //needed in IF and TE
 				//add to if and te

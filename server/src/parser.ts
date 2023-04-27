@@ -139,7 +139,7 @@ export class FileParser {
                         this.pullLocation(aliasWords, document, Location.create(uri, {
                             start: { line: i, character: 0 },
                             end: { line: i, character:  type_alias_match[0].length  }
-                        }), "typealias" );
+                        }), "type" );
                     }
                     else{
                         const cleanedLine = aliasWords.replace(/[{}]/g, '').trim();
@@ -148,7 +148,7 @@ export class FileParser {
                             this.pullLocation(element, document, Location.create(uri, {
                                 start: { line: i, character: 0 },
                                 end: { line: i, character:  type_alias_match[0].length  }
-                            }), "typealias" );                            
+                            }), "type" );                            
                         });
                     }
                 }
