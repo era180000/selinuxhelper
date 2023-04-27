@@ -1,5 +1,5 @@
 
-import { Location } from 'vscode-languageserver';
+import { Location, combineClientFeatures } from 'vscode-languageserver';
 import {
 	TextDocument,
 } from 'vscode-languageserver-textdocument';
@@ -76,23 +76,28 @@ export class FileParser {
         console.log("Parsing " + uri);
         const text = document.getText();
         //const regex = /^(type|typealias|attribute_role|attribute|bool)\s+((?:\w+(?:,\s*)?)+)(?:\s+alias\s+(?:\{?\s*(\w+(?:\s+\w+)*)\s*\}?|\w+))?;$/gm;  //look at this amazing regex
-        const typeRegex = /^\s*type\s+(\w+)(?:.*alias\s+({[\w\s]+}|[\w]+))?/gm;
-
+        const typeRegex = /^\s*type\s+(\w+)(?:.*alias\s+({[\w\s]+}|[\w]+))?/m;
+        const typeAliasRegex = /^\s*typealias\s+(\w+)(?:.*alias\s+({[\w\s]+}|[\w]+))?/m;
         const lines = text.split(/\r?\n/);
+        
         for(let i = 0; i < lines.length; i++){
-            const match = typeRegex.exec(lines[i]);
-            if (match){
-                const typeWord = match[1];
-                const aliasWords = match[2];
+            //console.log(lines[i]);
+            const type_match = lines[i].match(typeRegex);
+            const type_alias_match = lines[i].match(typeAliasRegex);
+            if (type_match){
+                const typeWord = type_match[1];
+                //console.log(typeWord);
+                const aliasWords = type_match[2];
+                //console.log(aliasWords);
 
                 let location = Location.create(uri, {
                     start: { line: i, character: 0 },
-                    end: { line: i, character: match[0].length }
+                    end: { line: i, character: type_match[0].length }
                 });
                 let description =  "```te\n"  + document.getText(location.range)+ '\n```\n' + document.uri;
                 //add it to the map
                 this.addLocation(
-                    match[1], //name at i-th index
+                    typeWord, //name at i-th index
                     Location.create(uri, {
                         start: { line: i, character: 0 },
                         end: { line: i, character: 0 }
@@ -104,7 +109,7 @@ export class FileParser {
                     if(aliasWords.indexOf("{") === -1){ //if single alias
                         let location = Location.create(uri, {
                             start: { line: i, character: 0 },
-                            end: { line: i, character: match[0].length }
+                            end: { line: i, character: type_match[0].length }
                         });
                         let description =  "```te\n"  + document.getText(location.range)+ '\n```\n' + document.uri;
                         //add it to the map
@@ -117,7 +122,7 @@ export class FileParser {
                             "type", //keyword for sorting
                             description
                         );
-                        console.log()
+                        //console.log(aliasWords);
                     }
                     else{
                         const cleanedLine = aliasWords.replace(/[{}]/g, '').trim();
@@ -125,7 +130,7 @@ export class FileParser {
                         aliasArray.forEach(element => {
                             let location = Location.create(uri, {
                                 start: { line: i, character: 0 },
-                                end: { line: i, character: match[0].length }
+                                end: { line: i, character: type_match[0].length }
                             });
                             let description =  "```te\n"  + document.getText(location.range)+ '\n```\n' + document.uri;
                             //add it to the map
@@ -138,14 +143,66 @@ export class FileParser {
                                 "type", //keyword for sorting
                                 description
                             );
+                            
                         });
+                        //console.log(aliasWords);
                     }
                 }
                 // Your if statement logic here
                 //console.log(`Line ${i + 1}: Type: ${typeWord}, Alias: ${aliasWords}`);
             }
-        }
+            else if(type_alias_match){
+                const typeWord = type_alias_match[1];
+                //console.log(typeWord);
+                const aliasWords = type_alias_match[2];
+                //console.log(type_alias_match[0]);
+                if (aliasWords){
+                    if(aliasWords.indexOf("{") === -1){ //if single alias
+                        let location = Location.create(uri, {
+                            start: { line: i, character: 0 },
+                            end: { line: i, character: type_alias_match[0].length }
+                        });
+                        let description =  "```te\n"  + document.getText(location.range)+ '\n```\n' + document.uri;
+                        //add it to the map
+                        this.addLocation(
+                            aliasWords, //name at i-th index
+                            Location.create(uri, {
+                                start: { line: i, character: 0 },
+                                end: { line: i, character: 0 }
+                            }),
+                            "typealias", //keyword for sorting
+                            description
+                        );
+                        console.log(aliasWords);
+                    }
+                    else{
+                        const cleanedLine = aliasWords.replace(/[{}]/g, '').trim();
+                        const aliasArray = cleanedLine.split(/\s+/);
+                        aliasArray.forEach(element => {
+                            let location = Location.create(uri, {
+                                start: { line: i, character: 0 },
+                                end: { line: i, character: type_alias_match[0].length }
+                            });
+                            let description =  "```te\n"  + document.getText(location.range)+ '\n```\n' + document.uri;
+                            //add it to the map
+                            this.addLocation(
+                                element, //name at i-th index
+                                Location.create(uri, {
+                                    start: { line: i, character: 0 },
+                                    end: { line: i, character: 0 }
+                                }),
+                                "typealias", //keyword for sorting
+                                description
+                            );
+                            
+                        });
+                        console.log(aliasWords);
+                    }
+                }
+                
 
+        }
+    }
         // let match;
         // let lineNumber = 0;
         // let previousMatchEndIndex = 0;
