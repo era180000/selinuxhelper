@@ -68,45 +68,118 @@ export class FileParser {
 
         }
         catch(err){
-            console.log("Error in parsing " + filePath);
+            console.log("Error in parsing " + filePath + err);
         }
     }
 
     private parseTE(document: TextDocument, uri: string){
         console.log("Parsing " + uri);
         const text = document.getText();
-        const regex = /^(type|attribute_role|attribute|bool)\s+((?:\w+(?:,\s*)?)+)(?:\s+alias\s+(\w+))?;$/gm; //look at this amazing regex
-        
-        let match;
-        let lineNumber = 0;
-        let previousMatchEndIndex = 0;
-        while ((match = regex.exec(text)) !== null) { //match the next line that fits the god forsaken regex above
-            const keyword = match[1]; //key word is the first capture group (type, bool, etc)
-            const names = match[2].split(/\s*,\s*/); //name(s) is the second capture group. Can be a list like type test1, test2; have to split them by commas
+        //const regex = /^(type|typealias|attribute_role|attribute|bool)\s+((?:\w+(?:,\s*)?)+)(?:\s+alias\s+(?:\{?\s*(\w+(?:\s+\w+)*)\s*\}?|\w+))?;$/gm;  //look at this amazing regex
+        const typeRegex = /^\s*type\s+(\w+)(?:.*alias\s+({[\w\s]+}|[\w]+))?/gm;
 
-            //keep track of line location with different regex matcher
-            const newlinesBeforeMatch = text.slice(previousMatchEndIndex, match.index).match(/(?:\r\n|\n)/g); //calculate number of newlines from previous match to current match
-            lineNumber += newlinesBeforeMatch ? newlinesBeforeMatch.length : 0; //if newlinesBeforeMatch is not null (true), add its length to lineNumber. Otherwise add 0 to line number
-            previousMatchEndIndex = match.index + match[0].length;  
+        const lines = text.split(/\r?\n/);
+        for(let i = 0; i < lines.length; i++){
+            const match = typeRegex.exec(lines[i]);
+            if (match){
+                const typeWord = match[1];
+                const aliasWords = match[2];
 
-            for(let i=0; i < names.length; i++){ //for each name in the array. Most of the time this executes once
                 let location = Location.create(uri, {
-                    start: { line: lineNumber, character: 0 },
-                    end: { line: lineNumber, character: match[0].length }
+                    start: { line: i, character: 0 },
+                    end: { line: i, character: match[0].length }
                 });
                 let description =  "```te\n"  + document.getText(location.range)+ '\n```\n' + document.uri;
                 //add it to the map
                 this.addLocation(
-                    names[i], //name at i-th index
+                    match[1], //name at i-th index
                     Location.create(uri, {
-                        start: { line: lineNumber, character: 0 },
-                        end: { line: lineNumber, character: match[0].length }
+                        start: { line: i, character: 0 },
+                        end: { line: i, character: 0 }
                     }),
-                    keyword, //keyword for sorting
+                    "type", //keyword for sorting
                     description
                 );
-            }    
-        }  
+                if (aliasWords){
+                    if(aliasWords.indexOf("{") === -1){ //if single alias
+                        let location = Location.create(uri, {
+                            start: { line: i, character: 0 },
+                            end: { line: i, character: match[0].length }
+                        });
+                        let description =  "```te\n"  + document.getText(location.range)+ '\n```\n' + document.uri;
+                        //add it to the map
+                        this.addLocation(
+                            aliasWords, //name at i-th index
+                            Location.create(uri, {
+                                start: { line: i, character: 0 },
+                                end: { line: i, character: 0 }
+                            }),
+                            "type", //keyword for sorting
+                            description
+                        );
+                        console.log()
+                    }
+                    else{
+                        const cleanedLine = aliasWords.replace(/[{}]/g, '').trim();
+                        const aliasArray = cleanedLine.split(/\s+/);
+                        aliasArray.forEach(element => {
+                            let location = Location.create(uri, {
+                                start: { line: i, character: 0 },
+                                end: { line: i, character: match[0].length }
+                            });
+                            let description =  "```te\n"  + document.getText(location.range)+ '\n```\n' + document.uri;
+                            //add it to the map
+                            this.addLocation(
+                                element, //name at i-th index
+                                Location.create(uri, {
+                                    start: { line: i, character: 0 },
+                                    end: { line: i, character: 0 }
+                                }),
+                                "type", //keyword for sorting
+                                description
+                            );
+                        });
+                    }
+                }
+                // Your if statement logic here
+                //console.log(`Line ${i + 1}: Type: ${typeWord}, Alias: ${aliasWords}`);
+            }
+        }
+
+        // let match;
+        // let lineNumber = 0;
+        // let previousMatchEndIndex = 0;
+        // while ((match = regex.exec(text)) !== null) { //match the next line that fits the god forsaken regex above
+        //     const keyword = match[1]; //key word is the first capture group (type, bool, etc)
+        //     const names = match[2].split(/\s*,\s*/); //name(s) is the second capture group. Can be a list like type test1, test2; have to split them by commas
+        //     const alias = match[3];
+        //     if(alias){
+        //         console.log(alias);
+        //     }
+            
+        //     //keep track of line location with different regex matcher
+        //     const newlinesBeforeMatch = text.slice(previousMatchEndIndex, match.index).match(/(?:\r\n|\n)/g); //calculate number of newlines from previous match to current match
+        //     lineNumber += newlinesBeforeMatch ? newlinesBeforeMatch.length : 0; //if newlinesBeforeMatch is not null (true), add its length to lineNumber. Otherwise add 0 to line number
+        //     previousMatchEndIndex = match.index + match[0].length;  
+
+        //     for(let i=0; i < names.length; i++){ //for each name in the array. Most of the time this executes once
+                // let location = Location.create(uri, {
+                //     start: { line: lineNumber, character: 0 },
+                //     end: { line: lineNumber, character: match[0].length }
+                // });
+                // let description =  "```te\n"  + document.getText(location.range)+ '\n```\n' + document.uri;
+                // //add it to the map
+                // this.addLocation(
+                //     names[i], //name at i-th index
+                //     Location.create(uri, {
+                //         start: { line: lineNumber, character: 0 },
+                //         end: { line: lineNumber, character: match[0].length }
+                //     }),
+                //     keyword, //keyword for sorting
+                //     description
+                // );
+        //     }    
+        // }  
     }
 
     private parseIF(document: TextDocument, uri: string){
