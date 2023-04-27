@@ -94,6 +94,7 @@ The `settings.json` appears as follows:
 ### Added
 
     - Intital realease of SELinuxHelper
+    - Updated ReadME to include all features in 1.0.0
 ## Initial Prereleases
 
 ## <u> 0.2.3 </u>
