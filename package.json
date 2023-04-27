@@ -107,6 +107,7 @@
 		}
 	},
 	"scripts": {
+		"build": "node build.js",
 		"vscode:prepublish": "npm run compile",
 		"compile": "tsc -b",
 		"watch": "tsc -b -w",
