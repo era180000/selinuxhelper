@@ -40,7 +40,7 @@ export class FileParser {
     {
         let fileExtension = path.extname(location.uri).substring(1);
 
-        let description =  "```" + fileExtension + "\n"  + document.getText(location.range)+ '\n```\n' + document.uri;
+        let description =  document.uri + "\n```" + fileExtension + "\n"  + document.getText(location.range)+ '\n```';
         //add it to the map
         this.addLocation(
             symbol, 
@@ -99,75 +99,97 @@ export class FileParser {
         const lines = text.split(/\r?\n/);
         
         for(let i = 0; i < lines.length; i++){
-            //console.log(lines[i]);
-            const typeMatch = lines[i].match(typeRegex);
-            const typeAliasMatch = lines[i].match(typeAliasRegex);
-            if (typeMatch){
-                const typeWord = typeMatch[1];
-                //console.log(typeWord);
-                const aliasWords = typeMatch[2];
-                //console.log(aliasWords);
-
-                this.pullLocation(typeWord, document, Location.create(uri, {
-                    start: { line: i, character: 0 },
-                    end: { line: i, character:  typeMatch[0].length  }
-                }), "type" );
-                
-                if (aliasWords){
-                    if(aliasWords.indexOf("{") === -1){ //if single alias
-
-                        this.pullLocation(aliasWords, document, Location.create(uri, {
-                            start: { line: i, character: 0 },
-                            end: { line: i, character: typeMatch[0].length }
-                        }), "type" );
+            //if line starts with gen_require(
+            //    skip parsing until closing braces
+            //)
+            if (/^\s*(gen_require)\(/.test(lines[i]))
+            {
+                let parenthesisStack = new Array();
+                parenthesisStack.push('(');
+                do{
+                    let startChar = 0;
+                    for(let s = startChar; s < lines[i].length && parenthesisStack.length !== 0; s++)
+                    {
+                        if(lines[i].charAt(s) === '('){
+                            parenthesisStack.push('(');
+                        }
+                        else if(lines[i].charAt(s) === ')')
+                        {
+                            parenthesisStack.pop();
+                        }
                     }
-                    else{
-                        const cleanedLine = aliasWords.replace(/[{}]/g, '').trim();
-                        const aliasArray = cleanedLine.split(/\s+/);
-                        aliasArray.forEach(element => {
-                            this.pullLocation(element, document, Location.create(uri, {
+                i++;
+                }while(parenthesisStack.length !== 0 && i < lines.length);
+                i--;
+            }
+            else {
+                const typeMatch = lines[i].match(typeRegex);
+                const typeAliasMatch = lines[i].match(typeAliasRegex);
+                if (typeMatch){
+                    const typeWord = typeMatch[1];
+                    const aliasWords = typeMatch[2];
+
+                    this.pullLocation(typeWord, document, Location.create(uri, {
+                        start: { line: i, character: 0 },
+                        end: { line: i, character:  typeMatch[0].length  }
+                    }), "type" );
+                    
+                    if (aliasWords){
+                        if(aliasWords.indexOf("{") === -1){ //if single alias
+
+                            this.pullLocation(aliasWords, document, Location.create(uri, {
                                 start: { line: i, character: 0 },
                                 end: { line: i, character: typeMatch[0].length }
                             }), "type" );
-                        });
-                        //console.log(aliasWords);
+                        }
+                        else{
+                            const cleanedLine = aliasWords.replace(/[{}]/g, '').trim();
+                            const aliasArray = cleanedLine.split(/\s+/);
+                            aliasArray.forEach(element => {
+                                this.pullLocation(element, document, Location.create(uri, {
+                                    start: { line: i, character: 0 },
+                                    end: { line: i, character: typeMatch[0].length }
+                                }), "type" );
+                            });
+                            //console.log(aliasWords);
+                        }
                     }
                 }
-            }
-            else if(typeAliasMatch){
-                const aliasWords = typeAliasMatch[2];
-                if (aliasWords){
-                    if(aliasWords.indexOf("{") === -1){ //if single alias
-                        this.pullLocation(aliasWords, document, Location.create(uri, {
-                            start: { line: i, character: 0 },
-                            end: { line: i, character:  typeAliasMatch[0].length  }
-                        }), "type" );
-                    }
-                    else{
-                        const cleanedLine = aliasWords.replace(/[{}]/g, '').trim();
-                        const aliasArray = cleanedLine.split(/\s+/);
-                        aliasArray.forEach(element => {
-                            this.pullLocation(element, document, Location.create(uri, {
+                else if(typeAliasMatch){
+                    const aliasWords = typeAliasMatch[2];
+                    if (aliasWords){
+                        if(aliasWords.indexOf("{") === -1){ //if single alias
+                            this.pullLocation(aliasWords, document, Location.create(uri, {
                                 start: { line: i, character: 0 },
                                 end: { line: i, character:  typeAliasMatch[0].length  }
-                            }), "type" );                            
-                        });
+                            }), "type" );
+                        }
+                        else{
+                            const cleanedLine = aliasWords.replace(/[{}]/g, '').trim();
+                            const aliasArray = cleanedLine.split(/\s+/);
+                            aliasArray.forEach(element => {
+                                this.pullLocation(element, document, Location.create(uri, {
+                                    start: { line: i, character: 0 },
+                                    end: { line: i, character:  typeAliasMatch[0].length  }
+                                }), "type" );                            
+                            });
+                        }
                     }
-                }
-                
+                    
 
-            }
-            else if (/^\s*(attribute|attribute_role|bool)/.test(lines[i])) { // check if line starts with "attribute" or "template"
-                const secondWord = lines[i].match(/\b\w+\b/g)?.[1];
-                let type = lines[i].match(/\b\w+\b/g)?.[0];
-                if(type === undefined) {
-                    type = "attribute";
                 }
-                if(secondWord !== undefined){
-                    this.pullLocation(secondWord, document, Location.create(uri, {
-                        start: { line: i, character: 0 },
-                        end: { line: i, character:  lines[i].length  }
-                    }), type );
+                else if (/^\s*(attribute|attribute_role|bool)/.test(lines[i])) { // check if line starts with "attribute" or "template"
+                    const secondWord = lines[i].match(/\b\w+\b/g)?.[1];
+                    let type = lines[i].match(/\b\w+\b/g)?.[0];
+                    if(type === undefined) {
+                        type = "attribute";
+                    }
+                    if(secondWord !== undefined){
+                        this.pullLocation(secondWord, document, Location.create(uri, {
+                            start: { line: i, character: 0 },
+                            end: { line: i, character:  lines[i].length  }
+                        }), type );
+                    }
                 }
             }
     }
