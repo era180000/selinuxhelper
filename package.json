@@ -3,7 +3,7 @@
 	"displayName": "SELinuxHelper",
 	"description": "Syntax Highlighting and Programmatic Languge Features for SELinux Policy Files (.fc, .if, .spt, .te)",
 	"icon": "client/images/selinux-penguin.png",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
