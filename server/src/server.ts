@@ -369,9 +369,7 @@ function needsDefinition(uri: string, searchTerm: string) {
 		}
 	}
 	//somehow not in correct file type
-	else {
-		return false;
-	}
+
 	return true;
 }
 connection.onHover( ({textDocument, position}): Hover | undefined => {

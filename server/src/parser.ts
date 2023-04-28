@@ -1,5 +1,5 @@
 
-import { Location, combineClientFeatures } from 'vscode-languageserver';
+import { Location } from 'vscode-languageserver';
 import {
 	TextDocument,
 } from 'vscode-languageserver-textdocument';
@@ -41,7 +41,6 @@ export class FileParser {
         let fileExtension = path.extname(location.uri).substring(1);
 
         let description =  "```" + fileExtension + "\n"  + document.getText(location.range)+ '\n```\n' + document.uri;
-        console.log(description);
         //add it to the map
         this.addLocation(
             symbol, 
@@ -101,17 +100,17 @@ export class FileParser {
         
         for(let i = 0; i < lines.length; i++){
             //console.log(lines[i]);
-            const type_match = lines[i].match(typeRegex);
-            const type_alias_match = lines[i].match(typeAliasRegex);
-            if (type_match){
-                const typeWord = type_match[1];
+            const typeMatch = lines[i].match(typeRegex);
+            const typeAliasMatch = lines[i].match(typeAliasRegex);
+            if (typeMatch){
+                const typeWord = typeMatch[1];
                 //console.log(typeWord);
-                const aliasWords = type_match[2];
+                const aliasWords = typeMatch[2];
                 //console.log(aliasWords);
 
                 this.pullLocation(typeWord, document, Location.create(uri, {
                     start: { line: i, character: 0 },
-                    end: { line: i, character:  type_match[0].length  }
+                    end: { line: i, character:  typeMatch[0].length  }
                 }), "type" );
                 
                 if (aliasWords){
@@ -119,7 +118,7 @@ export class FileParser {
 
                         this.pullLocation(aliasWords, document, Location.create(uri, {
                             start: { line: i, character: 0 },
-                            end: { line: i, character: type_match[0].length }
+                            end: { line: i, character: typeMatch[0].length }
                         }), "type" );
                     }
                     else{
@@ -128,20 +127,20 @@ export class FileParser {
                         aliasArray.forEach(element => {
                             this.pullLocation(element, document, Location.create(uri, {
                                 start: { line: i, character: 0 },
-                                end: { line: i, character: type_match[0].length }
+                                end: { line: i, character: typeMatch[0].length }
                             }), "type" );
                         });
                         //console.log(aliasWords);
                     }
                 }
             }
-            else if(type_alias_match){
-                const aliasWords = type_alias_match[2];
+            else if(typeAliasMatch){
+                const aliasWords = typeAliasMatch[2];
                 if (aliasWords){
                     if(aliasWords.indexOf("{") === -1){ //if single alias
                         this.pullLocation(aliasWords, document, Location.create(uri, {
                             start: { line: i, character: 0 },
-                            end: { line: i, character:  type_alias_match[0].length  }
+                            end: { line: i, character:  typeAliasMatch[0].length  }
                         }), "type" );
                     }
                     else{
@@ -150,7 +149,7 @@ export class FileParser {
                         aliasArray.forEach(element => {
                             this.pullLocation(element, document, Location.create(uri, {
                                 start: { line: i, character: 0 },
-                                end: { line: i, character:  type_alias_match[0].length  }
+                                end: { line: i, character:  typeAliasMatch[0].length  }
                             }), "type" );                            
                         });
                     }
