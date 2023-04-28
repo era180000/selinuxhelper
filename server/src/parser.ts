@@ -38,7 +38,10 @@ export class FileParser {
 
     private pullLocation(symbol: string, document: TextDocument, location: Location, type: string)
     {
-        let description =  "```te\n"  + document.getText(location.range)+ '\n```\n' + document.uri;
+        let fileExtension = path.extname(location.uri).substring(1);
+
+        let description =  "```" + fileExtension + "\n"  + document.getText(location.range)+ '\n```\n' + document.uri;
+        console.log(description);
         //add it to the map
         this.addLocation(
             symbol, 
