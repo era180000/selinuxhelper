@@ -20,7 +20,7 @@
 		"vscode": "^1.76.0"
 	},
 	"activationEvents": [],
-	"main": "./client/out/extension",
+	"main": "./out/client/src/extension.js",
 	"contributes": {
 		"languages": [
 			{
@@ -107,13 +107,11 @@
 		}
 	},
 	"scripts": {
-		"build": "node build.js",
-		"vscode:prepublish": "npm run compile",
-		"compile": "tsc -b",
-		"watch": "tsc -b -w",
-		"lint": "eslint ./client/src ./server/src --ext .ts,.tsx",
-		"postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
-		"test": "sh ./scripts/e2e.sh"
+		"vscode:prepublish": "npm run esbuild-base -- --minify",
+		"esbuild-base": "esbuild ./client/src/extension.ts ./server/src/server.ts ./server/src/parser.ts ./server/src/definitionInfo.ts ./server/src/completionItems/te.ts ./server/src/completionItems/if.ts ./server/src/completionItems/spt.ts ./server/src/completionItems/fc.ts --bundle --outdir=./out/ --external:vscode --format=cjs --platform=node",
+		"esbuild": "npm run esbuild-base -- --sourcemap",
+		"esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
+		"test-compile": "tsc -p ./"
 	},
 	"devDependencies": {
 		"@types/mocha": "^9.1.0",

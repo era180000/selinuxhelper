@@ -6,13 +6,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
-## [0.2.3]: 2023-04-21
+## [1.1.0]: 2023-04-25
+
+### [Fixed]
+
+    -Fixed extension bundling to reduce extension size. Down from 20MB to 500 KB
+
+## [1.0.1]: 2023-04-25
+
+### [Fixed]
+
+    -Modified TE parsing to better include aliases
+
+## [1.0.0]: 2023-04-25
+
+### [Added]
+
+    -Finalized all file parsing
+
+## [0.2.3]: 2023-04-25
 
 ### [Fixed]
 
     -Fixed f12 goto functionality
 
-## [0.2.2]: 2023-04-21
+## [0.2.2]: 2023-04-23
 
 ### [Added]
 
