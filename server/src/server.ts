@@ -436,7 +436,7 @@ connection.onDefinition(({ textDocument, position }): Definition | undefined => 
 		if (needsDefinition(document.uri, searchTerm)) {
 			let locations = parser.getLocations(searchTerm);
 			if(locations !== undefined){
-				console.log("Deinition for " + searchTerm + " found");
+				console.log("Definition for " + searchTerm + " found");
 			}
 			if(Array.isArray(locations))
 			{

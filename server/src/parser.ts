@@ -93,21 +93,22 @@ export class FileParser {
         console.log("Parsing " + uri);
         
         const text = document.getText();
-        //const regex = /^(type|typealias|attribute_role|attribute|bool)\s+((?:\w+(?:,\s*)?)+)(?:\s+alias\s+(?:\{?\s*(\w+(?:\s+\w+)*)\s*\}?|\w+))?;$/gm;  //look at this amazing regex
         const typeRegex = /^\s*type\s+(\w+)(?:.*alias\s+({[\w\s]+}|[\w]+))?/m;
         const typeAliasRegex = /^\s*typealias\s+(\w+)(?:.*alias\s+({[\w\s]+}|[\w]+))?/m;
         const lines = text.split(/\r?\n/);
-        
         for(let i = 0; i < lines.length; i++){
-            //if line starts with gen_require(
-            //    skip parsing until closing braces
-            //)
-            if (/^\s*(gen_require)\(/.test(lines[i]))
+
+            if (/^\s*gen_require\(/.test(lines[i]))
             {
+                //find end line of
+                let startLine = i;
+
                 let parenthesisStack = new Array();
-                parenthesisStack.push('(');
                 do{
                     let startChar = 0;
+                    if(i === startLine){
+                        startChar = lines[i].indexOf('(');
+                    }
                     for(let s = startChar; s < lines[i].length && parenthesisStack.length !== 0; s++)
                     {
                         if(lines[i].charAt(s) === '('){
@@ -118,9 +119,8 @@ export class FileParser {
                             parenthesisStack.pop();
                         }
                     }
-                i++;
+                    i++;
                 }while(parenthesisStack.length !== 0 && i < lines.length);
-                i--;
             }
             else {
                 const typeMatch = lines[i].match(typeRegex);
@@ -151,7 +151,6 @@ export class FileParser {
                                     end: { line: i, character: typeMatch[0].length }
                                 }), "type" );
                             });
-                            //console.log(aliasWords);
                         }
                     }
                 }
