@@ -70,7 +70,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
     -Finished Syntax Highlighting
     -Implemented base language server
-    -Finished defualt keyword code completion (LS)
+    -Finished default keyword code completion (LS)
     -Added include path setting for future parser (LS)
 
 

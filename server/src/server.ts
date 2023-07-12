@@ -171,7 +171,7 @@ function parseAllIncludedPaths(path:Array<String>, mode: string){ //for each pat
 
 connection.onRequest('custom/delete', async (params) => {
 	// handle custom request
-	console.log("Recieved deletion of file " + params.external);
+	console.log("Received deletion of file " + params.external);
 	parser.removeFileParse(params.external);
 });
 
@@ -303,10 +303,10 @@ function updateCompletionItemLists(){
 	combinedFCCompletionItems = [...parsedFCItems, ...fcCompletionItems];
 }
 
-/*	This function identifies the hovered word and seperates it from any surrounding text
+/*	This function identifies the hovered word and separates it from any surrounding text
 *	INPUTS: document: TextDocument of hovered word 
 *		position: Position of hovered word in Text Document
-*	OUTPUTS: String representing the hovered word seperated from any adjoining punctuation 
+*	OUTPUTS: String representing the hovered word separated from any adjoining punctuation 
 *				or separator markings 
 */
 function getWord(document: TextDocument, position: Position) {
@@ -339,7 +339,7 @@ function getWord(document: TextDocument, position: Position) {
 *			Uri of file location containing search term
 *	OUTPUTS: Boolean Value 
 *				True: likely to have a definition
-*				False: keyword, whitespace, or other invalid search teram
+*				False: keyword, whitespace, or other invalid search term
 */
 function needsDefinition(uri: string, searchTerm: string) {
 
@@ -432,7 +432,7 @@ connection.onDefinition(({ textDocument, position }): Definition | undefined => 
 
 	try{
 		const searchTerm = selectString(mainTerm, altTerm);
-		console.log("Searching for deinition on " + searchTerm);
+		console.log("Searching for definition on " + searchTerm);
 		if (needsDefinition(document.uri, searchTerm)) {
 			let locations = parser.getLocations(searchTerm);
 			if(locations !== undefined){

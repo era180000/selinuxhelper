@@ -2,7 +2,7 @@
 
 ![SELinux Penguin](client/images/selinux-penguin.png)
 
-SElinuxhelper is a VS Code exentsion that allows code completion, intellisense of definitions, and syntax highlighting for various types of SELinux files. 
+SElinuxhelper is a VS Code extension that allows code completion, intellisense of definitions, and syntax highlighting for various types of SELinux files. 
 
 The following are the supported file types: **.te, .if, .fc, and .spt.**
 
@@ -80,7 +80,7 @@ No additional requirements for this extension.
 ## Path Inclusion
 Users are able to specify the include in intellisense definition parsing. The default is `/user/share/selinux/devel/include/`.
 
-This setting can be edited under `File > Preferences > Settings` and searching `SELinux`. To add several paths, seperate them with a comma.
+This setting can be edited under `File > Preferences > Settings` and searching `SELinux`. To add several paths, separate them with a comma.
 
 The `settings.json` appears as follows:
 
@@ -93,7 +93,7 @@ The `settings.json` appears as follows:
 [2023-04-27]
 ### Added
 
-    - Intital realease of SELinuxHelper
+    - Initial release of SELinuxHelper
     - Updated ReadME to include all features in 1.0.0
 ## Initial Prereleases
 
@@ -144,7 +144,7 @@ The `settings.json` appears as follows:
 
     -Finished Syntax Highlighting
     -Implemented base language server
-    -Finished defualt keyword code completion (LS)
+    -Finished default keyword code completion (LS)
     -Added include path setting for future parser (LS)
 
 
